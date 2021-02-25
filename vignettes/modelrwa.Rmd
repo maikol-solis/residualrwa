@@ -1,0 +1,60 @@
+---
+title: "modelrwa"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{modelrwa}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(modelrwa)
+```
+
+```{r}
+X1 <- rnorm(1000)
+X2 <- rnorm(1000)
+X3 <- rnorm(1000)
+C  <- runif(1000)>0.7
+
+Y <- plogis(X2^3+10*X1*X2)>0.5
+
+data <- as.data.frame(cbind(Y,C,X1,X2,X3))
+
+plot(X1,X2, col=Y+1)
+```
+
+
+```{r}
+ex1 <- modelrwa(
+  response.name = "Y" ,
+  control = NULL,
+  fixed = NULL,
+  variables = c("X1","X2", "X3"),
+  data = data,
+  family = binomial,
+  include.interactions = TRUE
+)
+plot_rwa(ex1)
+```
+```{r}
+library(rms)
+ex1 <- modelrwa(
+  response.name = "Y" ,
+  control = NULL,
+  fixed = NULL,
+  variables = c("rcs(X1)","rcs(X2)", "rcs(X3)"),
+  data = data,
+  family = binomial,
+  include.interactions = TRUE
+)
+plot_rwa(ex1)
+```
+
