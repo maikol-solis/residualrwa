@@ -1,0 +1,24 @@
+Package: modelrwa
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Maikol Solís <maikol.solis@ucr.ac.cr>
+Maintainer: Maikol Solís <maikol.solis@ucr.ac.cr>
+Description: Estimates the relative importance of a set of variables (linear or non-linear) in a logistic model including their interactions.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+Imports: 
+    ggplot2,
+    rms,
+    dplyr,
+    scales,
+    stringr,
+    forcats
+VignetteBuilder: knitr
+RoxygenNote: 7.1.1
