@@ -253,7 +253,13 @@ residualrwa <-
     # }
 
 
+    model <- interaction_model$final_model
 
+    X <- extract_X_RWA(model = model,
+                       interactions = include.interactions,
+                       family = family)
+    X <- scale(X)
+    Y <- data[, response.name]
 
     base_names <- colnames(interaction_model$final_model$x)
     base_names <- stringr::str_replace(base_names, "\\[1\\]", "")
@@ -261,7 +267,7 @@ residualrwa <-
 
 
 
-    (rwa_values <- RWA(X, Y, data))
+    rwa_values <- RWA(X, Y, data, family = family)
 
     names_in_model_with_interactions <- colnames(X)
     names_in_model_with_interactions <-
