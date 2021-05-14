@@ -280,24 +280,24 @@ residualrwa <-
                  weight = rwa_values$PropWeights)
     rownames(df_rwa_summary) <- names_in_model_with_interactions
 
-
-    control_columns_names <-
-      as.character(sapply(control, function(x)
-        attr(eval(parse(
-          text = x
-        )), "colnames")))
-
-    fixed_columns_names <-
-      as.character(sapply(fixed, function(x)
-        attr(eval(parse(
-          text = x
-        )), "colnames")))
-
-    free_columns_names <-
-      as.character(sapply(free, function(x)
-        attr(eval(parse(
-          text = x
-        )), "colnames")))
+#
+#     control_columns_names <-
+#       as.character(sapply(control, function(x)
+#         attr(eval(parse(
+#           text = x
+#         )), "colnames")))
+#
+#     fixed_columns_names <-
+#       as.character(sapply(fixed, function(x)
+#         attr(eval(parse(
+#           text = x
+#         )), "colnames")))
+#
+#     free_columns_names <-
+#       as.character(sapply(free, function(x)
+#         attr(eval(parse(
+#           text = x
+#         )), "colnames")))
 
 
     cols.with.control <-
