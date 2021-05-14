@@ -224,8 +224,8 @@ modelrwa <-
       stringr::str_replace(names_in_model_with_interactions, "\\=.*", "")
 
     df_rwa_summary <-
-      data.frame(x = names_in_model_with_interactions,
-                 y = rwa_values$PropWeights)
+      data.frame(variable = names_in_model_with_interactions,
+                 weight = rwa_values$PropWeights)
     rownames(df_rwa_summary) <- names_in_model_with_interactions
 
 
@@ -275,7 +275,7 @@ modelrwa <-
 
     resume <- df_rwa_summary
     resume <- dplyr::group_by(resume, Variable_Type)
-    resume <- dplyr::summarise(resume, Effects_sum = sum(y))
+    resume <- dplyr::summarise(resume, Effects_sum = sum(weight))
 
 
     out <- list(
