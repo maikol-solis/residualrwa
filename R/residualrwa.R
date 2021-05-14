@@ -38,7 +38,7 @@
 #'
 #'
 
-modelrwa <-
+residualrwa <-
   function(response.name,
            control = NULL,
            fixed = NULL,
