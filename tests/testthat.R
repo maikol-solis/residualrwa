@@ -1,4 +1,4 @@
 library(testthat)
-library(modelrwa)
+library(residualrwa)
 
-test_check("modelrwa")
+test_check("residualrwa")
