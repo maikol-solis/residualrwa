@@ -63,7 +63,17 @@ residualrwa <-
       free_reorder <-   extract_column_names(data, free)
     }
 
-
+    if (is.character(family)) {
+      family <- get(family, mode = "function", envir = parent.frame())
+    }
+    if (is.function(family)) {
+      family <- family()
+    }
+    if (is.null(family$family) |
+        !(family$family %in% c("gaussian", "binomial"))) {
+      print(family)
+      stop("'family' not recognized for residualrwa")
+    }
 
 
     data <-
