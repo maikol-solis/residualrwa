@@ -410,7 +410,7 @@ include_interactions <-
       combinations <- utils::combn(c(fixed, free), 2)
 
       idxcombi <-
-        sapply(seq_along(combinations[1, ]),  function(i)
+        sapply(seq_along(combinations[1,]),  function(i)
           all(
             stringr::str_detect(combinations[, i], "\\A1\\z", negate = TRUE)
           ))
@@ -472,7 +472,7 @@ include_interactions <-
     }
 
     base_model <-
-      rms::Glm(
+      stats::glm(
         formula = frm_base,
         data = data,
         family = family,
