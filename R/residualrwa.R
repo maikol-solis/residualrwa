@@ -110,7 +110,9 @@ residualrwa <-
       stats::formula(paste0(
         response.name,
         "~ 1 ",
-        ifelse(length(control) != 0, paste0("+", paste0(control, collapse = "+")), ""),
+        ifelse(length(control) != 0, paste0("+", paste0(
+          control, collapse = "+"
+        )), ""),
         ifelse(length(fixed) != 0, paste0("+", paste0(fixed, collapse = "+")), ""),
         ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
       ))
@@ -270,6 +272,7 @@ residualrwa <-
     rwa_values <- RWA(X, Y, data, family = family)
 
     names_in_model_with_interactions <- colnames(X)
+    names_in_model_with_interactions <- stringr::str_remove(names_in_model_with_interactions, "\\s")
     names_in_model_with_interactions <-
       stringr::str_replace(names_in_model_with_interactions, "\\[1\\]", "")
     names_in_model_with_interactions <-
@@ -426,18 +429,20 @@ include_interactions <-
       idxia <-
         stringr::str_detect(free_interactions, "rcs")
 
-      free_interactions <- c(
-        free_interactions[idxia],
-        stringr::str_replace(free_interactions[!idxia], "%ia%", "*")
-      )
+      free_interactions <- c(free_interactions[idxia],
+                             stringr::str_replace(free_interactions[!idxia], "%ia%", "*"))
 
 
       frm_base <-
         stats::formula(paste0(
           response.name,
           "~ 1 ",
-          ifelse(length(control) != 0, paste0("+", paste0(control, collapse = "+")), ""),
-          ifelse(length(fixed) != 0, paste0("+", paste0(fixed, collapse = "+")), ""),
+          ifelse(length(control) != 0, paste0("+", paste0(
+            control, collapse = "+"
+          )), ""),
+          ifelse(length(fixed) != 0, paste0("+", paste0(
+            fixed, collapse = "+"
+          )), ""),
           ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
         ))
 
@@ -463,8 +468,12 @@ include_interactions <-
         stats::formula(paste0(
           response.name,
           "~ 1 ",
-          ifelse(length(control) != 0, paste0("+", paste0(control, collapse = "+")), ""),
-          ifelse(length(fixed) != 0, paste0("+", paste0(fixed, collapse = "+")), ""),
+          ifelse(length(control) != 0, paste0("+", paste0(
+            control, collapse = "+"
+          )), ""),
+          ifelse(length(fixed) != 0, paste0("+", paste0(
+            fixed, collapse = "+"
+          )), ""),
           ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
         ))
 
@@ -593,7 +602,7 @@ include_interactions <-
       list(
         control = control,
         fixed = fixed,
-        free = free,
+        free = unique(selected_main_vars),
         interactions = interactions,
         final_model = final_model
       )
