@@ -301,16 +301,18 @@ residualrwa <-
 
 
     cols.with.control <-
-      names_in_model_with_interactions[names_in_model_with_interactions %in% control_columns_names]
+      names_in_model_with_interactions[names_in_model_with_interactions %in% control]
 
     cols.with.fixed <-
-      names_in_model_with_interactions[names_in_model_with_interactions %in% fixed_columns_names]
+      names_in_model_with_interactions[names_in_model_with_interactions %in% fixed]
 
     cols.with.free <-
-      names_in_model_with_interactions[(names_in_model_with_interactions %in% free_columns_names)]
+      names_in_model_with_interactions[names_in_model_with_interactions %in% free]
 
     cols.with.interactions <-
-      names_in_model_with_interactions[!is_main_effect]
+      names_in_model_with_interactions[!(names_in_model_with_interactions %in% control)
+                                       & !(names_in_model_with_interactions %in% fixed)
+                                       & !(names_in_model_with_interactions %in% free)]
 
 
     df_rwa_summary[cols.with.control, "Variable_Type"] <-
@@ -408,7 +410,7 @@ include_interactions <-
       combinations <- utils::combn(c(fixed, free), 2)
 
       idxcombi <-
-        sapply(seq_along(combinations[1,]),  function(i)
+        sapply(seq_along(combinations[1, ]),  function(i)
           all(
             stringr::str_detect(combinations[, i], "\\A1\\z", negate = TRUE)
           ))
