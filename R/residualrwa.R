@@ -410,7 +410,7 @@ include_interactions <-
       combinations <- utils::combn(c(fixed, free), 2)
 
       idxcombi <-
-        sapply(seq_along(combinations[1,]),  function(i)
+        sapply(seq_along(combinations[1, ]),  function(i)
           all(
             stringr::str_detect(combinations[, i], "\\A1\\z", negate = TRUE)
           ))
@@ -483,35 +483,53 @@ include_interactions <-
 
 
 
-    full_model <-
-      rms::Glm(
-        formula = frm_full,
-        data = data,
-        family = family,
-        model = TRUE,
-        x = TRUE,
-        y = TRUE,
-        maxit = 500
-      )
+    # full_model <-
+    #   rms::Glm(
+    #     formula = frm_full,
+    #     data = data,
+    #     family = family,
+    #     model = TRUE,
+    #     x = TRUE,
+    #     y = TRUE,
+    #     maxit = 500
+    #   )
 
-    force_control <-
-      which(colnames(full_model$x) %in% extract_column_names(data, control))
-
-    force_fixed <-
-      which(colnames(full_model$x) %in% extract_column_names(data, fixed))
-
-
-    stepwise_model <-
-      rms::fastbw(
-        full_model,
-        rule = method,
-        type = "individual",
-        sls = alpha,
-        force = c(force_control, force_fixed)
-      )
+    # force_control <-
+    #   which(colnames(full_model$x) %in% extract_column_names(data, control))
+    #
+    # force_fixed <-
+    #   which(colnames(full_model$x) %in% extract_column_names(data, fixed))
 
 
-    selected_vars <- attr(terms(full_model$formula), "term.label")[stepwise_model$factors.kept]
+    # force_control <- extract_column_names(data, control)
+    # force_fixed <- extract_column_names(data, fixed)
+
+    if (length(control) == 0 & length(fixed) == 0) {
+      frm_lower <- formula("~1")
+    } else {
+      frm_lower <-
+        formula(paste0("~", paste0(control, fixed, collapse = "+")))
+    }
+
+    stepwise_model <- MASS::stepAIC(base_model,
+                                    scope = list(lower = frm_lower,
+                                                 upper = frm_full))
+
+    selected_vars <- attr(stepwise_model$terms, "term.labels")
+
+
+    # stepwise_model <-
+    #   rms::fastbw(
+    #     full_model,
+    #     rule = method,
+    #     type = "individual",
+    #     sls = alpha,
+    #     force = c(force_control, force_fixed)
+    #   )
+    #
+
+    # selected_vars <-
+    #   attr(terms(full_model$formula), "term.label")[stepwise_model$factors.kept]
 
     selected_main_vars <-
       stringr::str_split(selected_vars , "( ?%ia% ?|\\*)", simplify = TRUE)
