@@ -147,76 +147,112 @@ residualrwa <-
     names_in_model <- stats::terms(base_model$formula)
     names_in_model <- attr(names_in_model, "term.labels")
 
-    if (include.interactions &
-        length(interaction_model$interactions) != 0) {
-      interaction_names <- interaction_model$interactions
-      individual_var_names <-
-        stringr::str_split(interaction_names , "( ?%ia% ?|\\*|:)", simplify = TRUE)
-
-      interaction_names <-
-        stringr::str_replace(interaction_names, ":", "*")
-
-
-      residualized_var_list <- NULL
-
-      for (i in seq_along(interaction_names)) {
-        w <-
-          stats::as.formula(
-            paste0(
-              interaction_names[i],
-              "~",
-              "-1",
-              sep = "+",
-              individual_var_names[i, 1],
-              sep = "+",
-              individual_var_names[i, 2]
-            )
-          )
 
 
 
-        residualized_model <- stats::lm(w, data)
+    # Old residualization implementation
+    # if (include.interactions &
+    #     length(interaction_model$interactions) != 0) {
+    #   interaction_names <- interaction_model$interactions
+    #   individual_var_names <-
+    #     stringr::str_split(interaction_names , "( ?%ia% ?|\\*|:)", simplify = TRUE)
+    #
+    #   interaction_names <-
+    #     stringr::str_replace(interaction_names, ":", "*")
+    #
+    #
+    #   residualized_var_list <- NULL
+    #
+    #   for (i in seq_along(interaction_names)) {
+    #     w <-
+    #       stats::as.formula(
+    #         paste0(
+    #           interaction_names[i],
+    #           "~",
+    #           "-1",
+    #           sep = "+",
+    #           individual_var_names[i, 1],
+    #           sep = "+",
+    #           individual_var_names[i, 2]
+    #         )
+    #       )
+    #
+    #
+    #
+    #     residualized_model <- stats::lm(w, data)
+    #
+    #     residualized_variable <-  stats::resid(residualized_model)
+    #
+    #
+    #     if (interactions) {
+    #       col.interactions <-
+    #         which(model$Design$assume == "interaction")
+    #       # min.interaction <- min(col.interactions)
+    #       # design.interaction <- model$Design$interactions
+    #
+    #
+    #
+    #
+    #       for (k in col.interactions) {
+    #         xx <- str_split(colnames(model$x)[idx[[k]] - 1], " \\* |:")
+    #
+    #         if (length(xx) == 1) {
+    #           ll <- lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
+    #           XDesign[, idx[[k]] - 1] <- resid(ll)
+    #
+    #         } else{
+    #           for (i in seq_along(xx)) {
+    #             ll <- lm(model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]])
+    #             XDesign[, idx[[k]] - 1][, i] <- resid(ll)
+    #           }
+    #         }
+    #
+    #
+    #       }
+    #
+    #
+    #     }
+    #
+    #
+    #     # New implementation of residualization
+    #     # if (!is.matrix(residualized_variable)) {
+    #     #   residualized_variable <- unclass(residualized_variable)
+    #     #   residualized_variable <- data.frame(residualized_variable)
+    #     #   colnames(residualized_variable) <-
+    #     #     colnames(residualized_model$model)[1]
+    #     # } else {
+    #     #   # residualized_variable <- rowSums(residualized_variable)
+    #     #   residualized_variable <-
+    #     #     as.data.frame.matrix(residualized_variable)
+    #     # }
+    #
+    #
+    #     residualized_var_list[[interaction_names[i]]] <-
+    #       residualized_variable
+    #   }
+    #   names(residualized_var_list) <- NULL
+    #
+    #
+    #
+    #   if (is.null(residualized_var_list)) {
+    #     X <- as.data.frame(base_model$x)
+    #   } else {
+    #     names <- colnames(interaction_model$final_model$x)
+    #     is_main_effect <- !stringr::str_detect(names, "\\*")
+    #
+    #     X <-
+    #       cbind(as.data.frame(interaction_model$final_model$x[, is_main_effect]),
+    #             residualized_var_list)
+    #   }
+    #
+    #   Y <- data[, response.name]
+    # } else {
+    #   X <- interaction_model$final_model$x
+    #   Y <- data[, response.name]
+    #   is_main_effect <- !logical(ncol(X))
+    # }
 
-        residualized_variable <-  stats::resid(residualized_model)
 
-
-
-        if (!is.matrix(residualized_variable)) {
-          residualized_variable <- unclass(residualized_variable)
-          residualized_variable <- data.frame(residualized_variable)
-          colnames(residualized_variable) <-
-            colnames(residualized_model$model)[1]
-        } else {
-          # residualized_variable <- rowSums(residualized_variable)
-          residualized_variable <-
-            as.data.frame.matrix(residualized_variable)
-        }
-
-
-        residualized_var_list[[interaction_names[i]]] <-
-          residualized_variable
-      }
-      names(residualized_var_list) <- NULL
-
-
-
-      if (is.null(residualized_var_list)) {
-        X <- as.data.frame(base_model$x)
-      } else {
-        names <- colnames(interaction_model$final_model$x)
-        is_main_effect <- !stringr::str_detect(names, "\\*")
-
-        X <-
-          cbind(as.data.frame(interaction_model$final_model$x[, is_main_effect]),
-                residualized_var_list)
-      }
-
-      Y <- data[, response.name]
-    } else {
-      X <- interaction_model$final_model$x
-      Y <- data[, response.name]
-      is_main_effect <- !logical(ncol(X))
-    }
 
 
     base_names <- colnames(interaction_model$final_model$x)
