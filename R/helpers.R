@@ -56,6 +56,61 @@ extract_column_names <- function(data, type_variable) {
 }
 
 
+extract_X_RWA <- function(model, interactions, family) {
+  # Define Design matrix
+  XDesign <- model$x
+  idx <- model$assign
+
+  # Case when there are interactions
+  if (interactions) {
+    col.interactions <-
+      which(model$Design$assume == "interaction")
+    # min.interaction <- min(col.interactions)
+    # design.interaction <- model$Design$interactions
+
+
+    for (k in col.interactions) {
+      xx <- stringr::str_split(colnames(model$x)[idx[[k]] - 1], " \\* |:")
+
+      if (length(xx) == 1) {
+        ll <- lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
+        XDesign[, idx[[k]] - 1] <- resid(ll)
+
+      } else{
+        for (i in seq_along(xx)) {
+          ll <- lm(model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]])
+          XDesign[, idx[[k]] - 1][, i] <- resid(ll)
+        }
+      }
+    }
+  }
+
+  # Define the new fitting from the Design matrix
+  if(family$family == "binomial") {
+    ff <- rms::lrm.fit(x = XDesign, y = model$y, tol = 1e-9)
+  } else if (family$family == "gaussian") {
+    ff <- rms::ols(model$y ~ XDesign, tol = 1e-9)
+  }
+
+  # ff <- stats::glm.fit(x = cbind(1,XDesign), y = model$y, family = family)
+  cc <- ff$coefficients[-1]
+  X <- NULL
+
+
+  # Consolidate a new design matrix grouping the splines terms
+  for (j in seq_along(model$assign)) {
+    nn <- names(idx[j])
+    m <- as.matrix(XDesign[, idx[[j]] - 1])
+    sc <- cc[idx[[j]] - 1]
+    Xtmp <- m %*% sc
+    colnames(Xtmp) <- nn
+    X <- cbind(X, Xtmp)
+  }
+
+  return(X)
+}
+
+
 # R2M <- function(x, formula, data) {
 #   LM <- stats::update(x, formula, data = data)
 #   response.name <- all.vars(formula)[1]
