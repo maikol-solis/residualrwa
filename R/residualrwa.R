@@ -279,8 +279,8 @@ residualrwa <-
       stringr::str_replace(names_in_model_with_interactions, "\\=.*", "")
 
     df_rwa_summary <-
-      data.frame(variable = names_in_model_with_interactions,
-                 weight = rwa_values$PropWeights)
+      data.frame(Variable = names_in_model_with_interactions,
+                 Weight = rwa_values$PropWeights)
     rownames(df_rwa_summary) <- names_in_model_with_interactions
 
 #
@@ -318,21 +318,21 @@ residualrwa <-
                                        & !(names_in_model_with_interactions %in% free)]
 
 
-    df_rwa_summary[cols.with.control, "Variable_Type"] <-
+    df_rwa_summary[cols.with.control, "Type"] <-
       name.control
 
-    df_rwa_summary[cols.with.fixed, "Variable_Type"] <- name.fixed
+    df_rwa_summary[cols.with.fixed, "Type"] <- name.fixed
 
-    df_rwa_summary[cols.with.free, "Variable_Type"] <-
+    df_rwa_summary[cols.with.free, "Type"] <-
       name.free
 
-    df_rwa_summary[cols.with.interactions, "Variable_Type"] <-
+    df_rwa_summary[cols.with.interactions, "Type"] <-
       name.interactions
 
 
     resume <- df_rwa_summary
-    resume <- dplyr::group_by(resume, Variable_Type)
-    resume <- dplyr::summarise(resume, Effects_sum = sum(weight))
+    resume <- dplyr::group_by(resume, Type)
+    resume <- dplyr::summarise(resume, Effects_sum = sum(Weight))
 
 
     out <- list(
