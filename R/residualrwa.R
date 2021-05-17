@@ -48,9 +48,9 @@ residualrwa <-
            include.interactions = FALSE,
            alpha = 0.1,
            method = c("aic", "p"),
-           name.control = "Control variables",
-           name.fixed = "Fixed variables",
-           name.free = "Free variables",
+           name.control = "Control",
+           name.fixed = "Fixed",
+           name.free = "Free",
            name.interactions = "Interactions") {
     if (!is.data.frame(data)) {
       stop("The parameter 'data' must be a data.frame")
