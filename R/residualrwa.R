@@ -10,7 +10,7 @@
 #' @param alpha level of significance use if \code{method = "p"}.
 #' @param method method used to keep interactions if \code{include.interactions=TRUE}. See \code{\link[rms]{fastbw}}.
 #' @param name.control,name.fixed,name.variables,name.interactions Names used to label the summary tables
-#'
+#' @param verbose if \code{TRUE}, \code{residualrwa} shows all the stepwise process. Defaults to \code{FALSE}.
 #' @return A modelrwa object
 #' @export
 #'
@@ -51,7 +51,8 @@ residualrwa <-
            name.control = "Control",
            name.fixed = "Fixed",
            name.free = "Free",
-           name.interactions = "Interactions") {
+           name.interactions = "Interactions",
+           verbose = FALSE) {
     if (!is.data.frame(data)) {
       stop("The parameter 'data' must be a data.frame")
     }
@@ -143,7 +144,8 @@ residualrwa <-
       include.interactions = include.interactions,
       alpha = alpha,
       method = method,
-      family = family
+      family = family,
+      verbose = verbose
     )
 
     names_in_model <- stats::terms(base_model$formula)
@@ -375,7 +377,8 @@ include_interactions <-
            include.interactions = FALSE,
            family,
            alpha = 0.01,
-           method = c("aic", "p")) {
+           method = c("aic", "p"),
+           verbose = FALSE) {
     # if (is.null(pos.fixed)) {
     #   fixed <- NULL
     #
@@ -522,7 +525,7 @@ include_interactions <-
 
     stepwise_model <- MASS::stepAIC(base_model,
                                     scope = list(lower = frm_lower,
-                                                 upper = frm_full))
+                                                 upper = frm_full), trace = verbose)
 
     selected_vars <- attr(stepwise_model$terms, "term.labels")
 
