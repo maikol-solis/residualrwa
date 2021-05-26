@@ -4,7 +4,7 @@
 \alias{RWA}
 \title{Relative Weight Analysis for logistic regression}
 \usage{
-RWA(X, Y, data)
+RWA(X, Y, data, family)
 }
 \arguments{
 \item{X}{matrix or data.frame with inputs}
