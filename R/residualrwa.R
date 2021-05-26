@@ -34,9 +34,7 @@
 #'   include.interactions = TRUE
 #' )
 #'
-#'
-#'
-#'
+
 
 residualrwa <-
   function(response.name,
@@ -344,7 +342,7 @@ residualrwa <-
       rwa_model = rwa_values
     )
 
-    class(out) <- "modelrwa"
+    class(out) <- "residualrwa"
 
     return(out)
   }
