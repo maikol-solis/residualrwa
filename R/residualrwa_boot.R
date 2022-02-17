@@ -39,59 +39,54 @@
 
 
 residualrwa_boot <- function(response.name,
-                              control = NULL,
-                              fixed = NULL,
-                              free,
-                              data,
-                              family = stats::gaussian(),
-                              include.interactions = FALSE,
-                              alpha = 0.1,
-                              method = c("aic", "p"),
-                              name.control = "Control",
-                              name.fixed = "Fixed",
-                              name.free = "Free",
-                              name.interactions = "Interactions",
-                              verbose = FALSE,nboot=1){
-
-
+                             control = NULL,
+                             fixed = NULL,
+                             free,
+                             data,
+                             family = stats::gaussian(),
+                             include.interactions = FALSE,
+                             alpha = 0.1,
+                             method = c("aic", "p"),
+                             name.control = "Control",
+                             name.fixed = "Fixed",
+                             name.free = "Free",
+                             name.interactions = "Interactions",
+                             verbose = FALSE,
+                             nboot = 100) {
   rwaBoots <- lapply(X = 1:nboot,
-                 function(X) {
-                   data_boot <- data[sample(nrow(data), nrow(data), replace = T),]
+                     function(i) {
+                       message(paste0("Boot sample #", i))
+                       data_boot <- data[sample(nrow(data), nrow(data), replace = T), ]
 
-                   exRWA <- residualrwa(
-                     response.name,
-                     control,
-                     fixed,
-                     free,
-                     data = data_boot,
-                     family,
-                     include.interactions,
-                     alpha,
-                     method,
-                     name.control,
-                     name.fixed,
-                     name.free,
-                     name.interactions,
-                     verbose
-                   )
+                       exRWA <- residualrwa(
+                         response.name,
+                         control,
+                         fixed,
+                         free,
+                         data = data_boot,
+                         family,
+                         include.interactions,
+                         alpha,
+                         method,
+                         name.control,
+                         name.fixed,
+                         name.free,
+                         name.interactions,
+                         verbose
+                       )
 
-                    return(data.frame(exRWA$data_frame, nboot = rep(X, nrow(exRWA$data_frame))))
+                       return(data.frame(exRWA$data_frame, nboot = rep(i, nrow(exRWA$data_frame))))
 
                      })
 
   result <- dplyr::bind_rows(rwaBoots)
 
-  result <- tidyr::complete(data=result,Variable,nboot)
+  result <- tidyr::complete(data = result, Variable, nboot)
 
-  result$Weight<- ifelse(is.na(result$Weight),0,result$Weight)
+  result$Weight <- ifelse(is.na(result$Weight), 0, result$Weight)
 
   #Completo en caso de que no aparezca en la selecci'on
 
   return(result)
 
 }
-
-
-
-
-
