@@ -34,19 +34,19 @@
 #'   include.interactions = TRUE
 #' )
 #'
-residualrwa <- function(response.name,
+residualrwa <- function(response_name,
                         control = NULL,
                         fixed = NULL,
                         free,
                         data,
                         family = stats::gaussian(),
-                        include.interactions = FALSE,
+                        include_interactions = FALSE,
                         alpha = 0.1,
                         method = c("aic", "p"),
-                        name.control = "Control",
-                        name.fixed = "Fixed",
-                        name.free = "Free",
-                        name.interactions = "Interactions",
+                        name_control = "Control",
+                        name_fixed = "Fixed",
+                        name_free = "Free",
+                        name_interactions = "Interactions",
                         verbose = FALSE) {
   if (!is.data.frame(data)) {
     stop("The parameter 'data' must be a data.frame")
@@ -73,7 +73,7 @@ residualrwa <- function(response.name,
 
   data <-
     data[, c(
-      response.name,
+      response_name,
       control_reorder,
       fixed_reorder,
       free_reorder
@@ -103,7 +103,7 @@ residualrwa <- function(response.name,
 
   formula_base_model <-
     stats::formula(paste0(
-      response.name,
+      response_name,
       "~ 1 ",
       ifelse(length(control) != 0, paste0("+", paste0(
         control,
@@ -139,8 +139,8 @@ residualrwa <- function(response.name,
     # pos.fixed = pos.fixed,
     # pos.free = pos.free,
     # pos.control = pos.control,
-    response.name = response.name,
-    include.interactions = include.interactions,
+    response.name = response_name,
+    include.interactions = include_interactions,
     alpha = alpha,
     method = method,
     family = family,
@@ -260,11 +260,11 @@ residualrwa <- function(response.name,
 
   X <- extract_X_RWA(
     model = model,
-    interactions = include.interactions,
+    interactions = include_interactions,
     family = family
   )
   X <- scale(X)
-  Y <- data[, response.name]
+  Y <- data[, response_name]
 
   base_names <- colnames(interaction_model$final_model$x)
   base_names <- stringr::str_replace(base_names, "\\[1\\]", "")
@@ -324,15 +324,15 @@ residualrwa <- function(response.name,
 
 
   df_rwa_summary[cols.with.control, "Type"] <-
-    name.control
+    name_control
 
-  df_rwa_summary[cols.with.fixed, "Type"] <- name.fixed
+  df_rwa_summary[cols.with.fixed, "Type"] <- name_fixed
 
   df_rwa_summary[cols.with.free, "Type"] <-
-    name.free
+    name_free
 
   df_rwa_summary[cols.with.interactions, "Type"] <-
-    name.interactions
+    name_interactions
 
 
   resume <- df_rwa_summary
