@@ -20,24 +20,20 @@
 #' X2 <- rnorm(1000)
 #' X3 <- rnorm(1000)
 #'
-#' Y <- plogis(X2^3+10*X1*X2)>0.5
+#' Y <- plogis(X2^3 + 10 * X1 * X2) > 0.5
 #'
-#' data <- as.data.frame(cbind(Y,X1,X2,X3))
+#' data <- as.data.frame(cbind(Y, X1, X2, X3))
 #'
 #' ex1 <- modelrwa(
-#'   response.name = "Y" ,
+#'   response.name = "Y",
 #'   control = NULL,
 #'   fixed = NULL,
-#'   variables = c("X1","X2", "X3"),
+#'   variables = c("X1", "X2", "X3"),
 #'   data = data,
 #'   family = binomial,
 #'   include.interactions = TRUE
 #' )
 #'
-#'
-
-
-
 residualrwa_boot <- function(response.name,
                              control = NULL,
                              fixed = NULL,
@@ -53,31 +49,34 @@ residualrwa_boot <- function(response.name,
                              name.interactions = "Interactions",
                              verbose = FALSE,
                              nboot = 100) {
-  rwaBoots <- lapply(X = 1:nboot,
-                     function(i) {
-                       message(paste0("Boot sample #", i))
-                       data_boot <- data[sample(nrow(data), nrow(data), replace = T), ]
+  rwaBoots <- lapply(
+    X = 1:nboot,
+    function(i) {
+      message(paste0("Boot sample #", i))
+      data_boot <- data[sample(nrow(data), nrow(data), replace = T), ]
 
-                       exRWA <- residualrwa(
-                         response.name,
-                         control,
-                         fixed,
-                         free,
-                         data = data_boot,
-                         family,
-                         include.interactions,
-                         alpha,
-                         method,
-                         name.control,
-                         name.fixed,
-                         name.free,
-                         name.interactions,
-                         verbose
-                       )
+      exRWA <- residualrwa(
+        response.name,
+        control,
+        fixed,
+        free,
+        data = data_boot,
+        family,
+        include.interactions,
+        alpha,
+        method,
+        name.control,
+        name.fixed,
+        name.free,
+        name.interactions,
+        verbose
+      )
 
-                       return(data.frame(exRWA$data_frame, nboot = rep(i, nrow(exRWA$data_frame))))
-
-                     })
+      return(data.frame(exRWA$data_frame,
+        nboot = rep(i, nrow(exRWA$data_frame))
+      ))
+    }
+  )
 
   result <- dplyr::bind_rows(rwaBoots)
 
@@ -85,8 +84,7 @@ residualrwa_boot <- function(response.name,
 
   result$Weight <- ifelse(is.na(result$Weight), 0, result$Weight)
 
-  #Completo en caso de que no aparezca en la selecci'on
+  # Completo en caso de que no aparezca en la selecci'on
 
   return(result)
-
 }

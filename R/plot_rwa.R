@@ -8,9 +8,7 @@
 #' @export
 #'
 #' @examples
-#'
 plot_rwa <- function(x, title = "") {
-
   df <- x$data_frame
   df$Variable <- reorder(df$Variable, df$Weight)
 
@@ -23,5 +21,4 @@ plot_rwa <- function(x, title = "") {
 
 
   return(p2)
-
 }

@@ -7,16 +7,9 @@
 #' @export
 #'
 #' @examples
-#'
-
-
-
-
-plotbootrwa <- function(x,title=""){
-
+plotbootrwa <- function(x, title = "") {
   x$Variable <- reorder(x$Variable, x$Weight)
-  p2 <-
-    ggplot2::ggplot(x) +
+  p2 <- ggplot2::ggplot(x) +
     ggplot2::geom_boxplot(ggplot2::aes(Variable, Weight)) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::scale_y_continuous(labels = scales::percent) +
@@ -24,5 +17,4 @@ plotbootrwa <- function(x,title=""){
     ggplot2::coord_flip()
 
   return(p2)
-
 }

@@ -36,16 +36,14 @@ RWA <- function(X, Y, data, family) {
     # Getting stdev of logit-Y-hat
     stdYhat <- stats::sd(Yhat)
     # Computing standardized logistic regression coefficients
-    beta <-  b * ((sqrt(Rsq)) / stdYhat)
-
+    beta <- b * ((sqrt(Rsq)) / stdYhat)
   } else if (family$family == "gaussian") {
     beta <- unstCoefs[2:length(unstCoefs)]
-
   }
 
 
 
-  epsilon <- Lambda ^ 2 %*% beta ^ 2
+  epsilon <- Lambda^2 %*% beta^2
   sum.epsilons <- sum(epsilon)
   PropWeights <- (epsilon / sum.epsilons)
   names(PropWeights) <- colnames(X)
@@ -62,10 +60,11 @@ RWA <- function(X, Y, data, family) {
 
 
 extract_column_names <- function(data, type_variable) {
-  unlist(sapply(colnames(data), function(column.name)
+  unlist(sapply(colnames(data), function(column.name) {
     na.omit(
       stringr::str_match(type_variable, column.name)
-    )))
+    )
+  }))
 }
 
 
@@ -88,8 +87,7 @@ extract_X_RWA <- function(model, interactions, family) {
       if (length(xx) == 1) {
         ll <- lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
         XDesign[, idx[[k]] - 1] <- resid(ll)
-
-      } else{
+      } else {
         for (i in seq_along(xx)) {
           ll <- lm(model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]])
           XDesign[, idx[[k]] - 1][, i] <- resid(ll)
@@ -99,7 +97,7 @@ extract_X_RWA <- function(model, interactions, family) {
   }
 
   # Define the new fitting from the Design matrix
-  if(family$family == "binomial") {
+  if (family$family == "binomial") {
     ff <- rms::lrm.fit(x = XDesign, y = model$y, tol = 1e-9)
   } else if (family$family == "gaussian") {
     ff <- rms::ols(model$y ~ XDesign, tol = 1e-9)
