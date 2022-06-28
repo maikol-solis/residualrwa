@@ -7,7 +7,6 @@
 #' @param data object data.frame with data
 #' @param family type of regression (see \code{\link[stats]{family}})
 #' @param include.interactions A boolean indicating if the model should calculate all the pairwise interactions between variables. It uses the names in the parameters \code{fixed} and \code{variables}.
-#' @param method method used to keep interactions if \code{include.interactions=TRUE}. See \code{\link[rms]{fastbw}}.
 #' @param name.control,name.fixed,name.variables,name.interactions Names used to label the summary tables
 #' @param verbose if \code{TRUE}, \code{residualrwa} shows all the stepwise process. Defaults to \code{FALSE}.
 #' @return A modelrwa object
@@ -40,7 +39,6 @@ residualrwa <- function(response_name,
                         data,
                         family = stats::gaussian(),
                         include_interactions = FALSE,
-                        method = c("aic", "p"),
                         name_control = "Control",
                         name_fixed = "Fixed",
                         name_free = "Free",
@@ -125,7 +123,6 @@ residualrwa <- function(response_name,
     free = free,
     response.name = response_name,
     include.interactions = include_interactions,
-    method = method,
     family = family,
     verbose = verbose
   )
@@ -207,7 +204,6 @@ residualrwa <- function(response_name,
 # @param pos.control,pos.fixed,pos.free position of the control, fixed and variables inputs in the data.frame.
 #' @param include.interactions a boolean indicating if create or no a pairwise set of interactions.
 #' @param family type of regression (see \code{\link[stats]{family}})
-#' @param method method used to keep interactions if \code{include.interactions=TRUE}. See \code{\link[rms]{fastbw}}.
 #'
 #' @return a list with the control, fixed, free and interactions used in the model. Also it returns the the fitted model.
 #'
@@ -220,7 +216,6 @@ include_interactions_fn <- function(formula = NULL,
                                     free = free,
                                     include_interactions = FALSE,
                                     family,
-                                    method = c("aic", "p"),
                                     verbose = FALSE) {
   if (include_interactions) {
     combinations <- utils::combn(c(fixed, free), 2)
