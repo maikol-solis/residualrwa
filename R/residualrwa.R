@@ -64,7 +64,7 @@ residualrwa <- function(response_name,
   if (is.function(family)) {
     family <- family()
   }
-  if (is.null(family$family) |
+  if (is.null(family$family) ||
     !(family$family %in% c("gaussian", "binomial"))) {
     print(family)
     stop("'family' not recognized for residualrwa")
@@ -79,11 +79,11 @@ residualrwa <- function(response_name,
       free_reorder
     )]
 
-  if (is.character(control) & length(control) == 0) {
+  if (is.character(control) && length(control) == 0) {
     stop("control parameter must be a character vector or NULL")
   }
 
-  if (is.character(fixed) & length(fixed) == 0) {
+  if (is.character(fixed) && length(fixed) == 0) {
     stop("fixed parameter must be a character vector or NULL")
   }
 
