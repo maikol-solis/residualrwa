@@ -138,64 +138,52 @@ residualrwa <- function(response_name,
 
   model <- interaction_model$final_model
 
-  X <- extract_X_RWA(
+  x <- extract_X_RWA(
     model = model,
     interactions = include_interactions,
     family = family
   )
-  X <- scale(X)
-  Y <- data[, response_name]
+  x <- scale(x)
+  y <- data[, response_name]
 
   base_names <- colnames(interaction_model$final_model$x)
   base_names <- stringr::str_replace(base_names, "\\[1\\]", "")
   base_names <- stringr::str_replace(base_names, "\\=.*", "")
 
-  rwa_values <- RWA(X, Y, data, family = family)
+  rwa_values <- RWA(x, y, data, family = family)
 
-  names_in_model_with_interactions <- colnames(X)
-  names_in_model_with_interactions <- stringr::str_remove(names_in_model_with_interactions, "\\s")
-  names_in_model_with_interactions <-
-    stringr::str_replace(names_in_model_with_interactions, "\\[1\\]", "")
-  names_in_model_with_interactions <-
-    stringr::str_replace(names_in_model_with_interactions, "\\=.*", "")
+  columns_names <- colnames(x)
+  columns_names <- stringr::str_remove(columns_names, "\\s")
+  columns_names <- stringr::str_replace(columns_names, "\\[1\\]", "")
+  columns_names <- stringr::str_replace(columns_names, "\\=.*", "")
 
   df_rwa_summary <-
     data.frame(
-      Variable = names_in_model_with_interactions,
-      Weight = rwa_values$PropWeights
+      variable = columns_names,
+      weight = rwa_values$PropWeights
     )
-  rownames(df_rwa_summary) <- names_in_model_with_interactions
+  rownames(df_rwa_summary) <- columns_names
 
-  cols.with.control <-
-    names_in_model_with_interactions[names_in_model_with_interactions %in% control]
+  cols_with_control <- columns_names[columns_names %in% control]
 
-  cols.with.fixed <-
-    names_in_model_with_interactions[names_in_model_with_interactions %in% fixed]
+  cols_with_fixed <- columns_names[columns_names %in% fixed]
 
-  cols.with.free <-
-    names_in_model_with_interactions[names_in_model_with_interactions %in% free]
+  cols_with_free <- columns_names[columns_names %in% free]
 
-  cols.with.interactions <-
-    names_in_model_with_interactions[!(names_in_model_with_interactions %in% control) &
-      !(names_in_model_with_interactions %in% fixed) &
-      !(names_in_model_with_interactions %in% free)]
+  cols_with_interactions <- columns_names[
+    !(columns_names %in% control) &
+      !(columns_names %in% fixed) &
+      !(columns_names %in% free)
+  ]
 
-
-  df_rwa_summary[cols.with.control, "Type"] <-
-    name_control
-
-  df_rwa_summary[cols.with.fixed, "Type"] <- name_fixed
-
-  df_rwa_summary[cols.with.free, "Type"] <-
-    name_free
-
-  df_rwa_summary[cols.with.interactions, "Type"] <-
-    name_interactions
-
+  df_rwa_summary[cols_with_control, "type"] <- name_control
+  df_rwa_summary[cols_with_fixed, "type"] <- name_fixed
+  df_rwa_summary[cols_with_free, "type"] <- name_free
+  df_rwa_summary[cols_with_interactions, "type"] <- name_interactions
 
   resume <- df_rwa_summary
-  resume <- dplyr::group_by(resume, Type)
-  resume <- dplyr::summarise(resume, Effects_sum = sum(Weight))
+  resume <- dplyr::group_by(resume, type)
+  resume <- dplyr::summarise(resume, Effects_sum = sum(weight))
 
 
   out <- list(
