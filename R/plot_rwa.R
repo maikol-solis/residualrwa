@@ -10,7 +10,9 @@
 #' @examples
 plot_rwa <- function(x, title = "") {
   df <- x$data_frame
-  df$Variable <- reorder(df$Variable, df$Weight)
+  variable <- weight <- NULL
+
+  df$variable <- reorder(df$variable, df$weight)
 
   p2 <- ggplot2::ggplot(data = df) +
     ggplot2::geom_bar(ggplot2::aes(variable, weight), stat = "identity") +
