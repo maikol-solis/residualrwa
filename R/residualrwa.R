@@ -130,7 +130,7 @@ residualrwa <- function(response_name,
 
 
 
-  interaction_model <- include_interactions(
+  interaction_model <- include_interactions_fn(
     formula = formula_base_model,
     data = data,
     control = control,
@@ -370,17 +370,17 @@ residualrwa <- function(response_name,
 #' @return a list with the control, fixed, free and interactions used in the model. Also it returns the the fitted model.
 #'
 #' @keywords internal
-include_interactions <- function(formula = NULL,
-                                 response.name = NULL,
-                                 data = NULL,
-                                 control = control,
-                                 fixed = fixed,
-                                 free = free,
-                                 include.interactions = FALSE,
-                                 family,
-                                 alpha = 0.01,
-                                 method = c("aic", "p"),
-                                 verbose = FALSE) {
+include_interactions_fn <- function(formula = NULL,
+                                    response_name = NULL,
+                                    data = NULL,
+                                    control = control,
+                                    fixed = fixed,
+                                    free = free,
+                                    include_interactions = FALSE,
+                                    family,
+                                    alpha = 0.01,
+                                    method = c("aic", "p"),
+                                    verbose = FALSE) {
   # if (is.null(pos.fixed)) {
   #   fixed <- NULL
   #
