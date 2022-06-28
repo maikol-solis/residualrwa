@@ -77,8 +77,6 @@ extract_X_RWA <- function(model, interactions, family) {
   if (interactions) {
     col.interactions <-
       which(model$Design$assume == "interaction")
-    # min.interaction <- min(col.interactions)
-    # design.interaction <- model$Design$interactions
 
 
     for (k in col.interactions) {
@@ -103,7 +101,6 @@ extract_X_RWA <- function(model, interactions, family) {
     ff <- rms::ols(model$y ~ XDesign, tol = 1e-9)
   }
 
-  # ff <- stats::glm.fit(x = cbind(1,XDesign), y = model$y, family = family)
   cc <- ff$coefficients[-1]
   X <- NULL
 

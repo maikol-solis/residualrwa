@@ -87,19 +87,10 @@ residualrwa <- function(response_name,
     stop("fixed parameter must be a character vector or NULL")
   }
 
-  # if (is.null(control))
-  #   control <- 1
-  #
-  # if (is.null(fixed))
-  #   fixed <- 1
-
   control <- stringr::str_remove(control, "\\s")
   fixed <- stringr::str_remove(fixed, "\\s")
   free <- stringr::str_remove(free, "\\s")
 
-  # pos.control <- which(colnames(data) %in% control_reorder )
-  # pos.fixed <- which(colnames(data) %in% fixed_reorder )
-  # pos.free <- which(colnames(data) %in% free_reorder )
 
   formula_base_model <-
     stats::formula(paste0(
@@ -128,17 +119,12 @@ residualrwa <- function(response_name,
       y = TRUE
     )
 
-
-
   interaction_model <- include_interactions_fn(
     formula = formula_base_model,
     data = data,
     control = control,
     fixed = fixed,
     free = free,
-    # pos.fixed = pos.fixed,
-    # pos.free = pos.free,
-    # pos.control = pos.control,
     response.name = response_name,
     include.interactions = include_interactions,
     alpha = alpha,
@@ -149,112 +135,6 @@ residualrwa <- function(response_name,
 
   names_in_model <- stats::terms(base_model$formula)
   names_in_model <- attr(names_in_model, "term.labels")
-
-
-
-
-  # Old residualization implementation
-  # if (include.interactions &
-  #     length(interaction_model$interactions) != 0) {
-  #   interaction_names <- interaction_model$interactions
-  #   individual_var_names <-
-  #     stringr::str_split(interaction_names , "( ?%ia% ?|\\*|:)", simplify = TRUE)
-  #
-  #   interaction_names <-
-  #     stringr::str_replace(interaction_names, ":", "*")
-  #
-  #
-  #   residualized_var_list <- NULL
-  #
-  #   for (i in seq_along(interaction_names)) {
-  #     w <-
-  #       stats::as.formula(
-  #         paste0(
-  #           interaction_names[i],
-  #           "~",
-  #           "-1",
-  #           sep = "+",
-  #           individual_var_names[i, 1],
-  #           sep = "+",
-  #           individual_var_names[i, 2]
-  #         )
-  #       )
-  #
-  #
-  #
-  #     residualized_model <- stats::lm(w, data)
-  #
-  #     residualized_variable <-  stats::resid(residualized_model)
-  #
-  #
-  #     if (interactions) {
-  #       col.interactions <-
-  #         which(model$Design$assume == "interaction")
-  #       # min.interaction <- min(col.interactions)
-  #       # design.interaction <- model$Design$interactions
-  #
-  #
-  #
-  #
-  #       for (k in col.interactions) {
-  #         xx <- str_split(colnames(model$x)[idx[[k]] - 1], " \\* |:")
-  #
-  #         if (length(xx) == 1) {
-  #           ll <- lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
-  #           XDesign[, idx[[k]] - 1] <- resid(ll)
-  #
-  #         } else{
-  #           for (i in seq_along(xx)) {
-  #             ll <- lm(model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]])
-  #             XDesign[, idx[[k]] - 1][, i] <- resid(ll)
-  #           }
-  #         }
-  #
-  #
-  #       }
-  #
-  #
-  #     }
-  #
-  #
-  #     # New implementation of residualization
-  #     # if (!is.matrix(residualized_variable)) {
-  #     #   residualized_variable <- unclass(residualized_variable)
-  #     #   residualized_variable <- data.frame(residualized_variable)
-  #     #   colnames(residualized_variable) <-
-  #     #     colnames(residualized_model$model)[1]
-  #     # } else {
-  #     #   # residualized_variable <- rowSums(residualized_variable)
-  #     #   residualized_variable <-
-  #     #     as.data.frame.matrix(residualized_variable)
-  #     # }
-  #
-  #
-  #     residualized_var_list[[interaction_names[i]]] <-
-  #       residualized_variable
-  #   }
-  #   names(residualized_var_list) <- NULL
-  #
-  #
-  #
-  #   if (is.null(residualized_var_list)) {
-  #     X <- as.data.frame(base_model$x)
-  #   } else {
-  #     names <- colnames(interaction_model$final_model$x)
-  #     is_main_effect <- !stringr::str_detect(names, "\\*")
-  #
-  #     X <-
-  #       cbind(as.data.frame(interaction_model$final_model$x[, is_main_effect]),
-  #             residualized_var_list)
-  #   }
-  #
-  #   Y <- data[, response.name]
-  # } else {
-  #   X <- interaction_model$final_model$x
-  #   Y <- data[, response.name]
-  #   is_main_effect <- !logical(ncol(X))
-  # }
-
 
   model <- interaction_model$final_model
 
@@ -269,8 +149,6 @@ residualrwa <- function(response_name,
   base_names <- colnames(interaction_model$final_model$x)
   base_names <- stringr::str_replace(base_names, "\\[1\\]", "")
   base_names <- stringr::str_replace(base_names, "\\=.*", "")
-
-
 
   rwa_values <- RWA(X, Y, data, family = family)
 
@@ -287,26 +165,6 @@ residualrwa <- function(response_name,
       Weight = rwa_values$PropWeights
     )
   rownames(df_rwa_summary) <- names_in_model_with_interactions
-
-  #
-  #     control_columns_names <-
-  #       as.character(sapply(control, function(x)
-  #         attr(eval(parse(
-  #           text = x
-  #         )), "colnames")))
-  #
-  #     fixed_columns_names <-
-  #       as.character(sapply(fixed, function(x)
-  #         attr(eval(parse(
-  #           text = x
-  #         )), "colnames")))
-  #
-  #     free_columns_names <-
-  #       as.character(sapply(free, function(x)
-  #         attr(eval(parse(
-  #           text = x
-  #         )), "colnames")))
-
 
   cols.with.control <-
     names_in_model_with_interactions[names_in_model_with_interactions %in% control]
@@ -381,40 +239,7 @@ include_interactions_fn <- function(formula = NULL,
                                     alpha = 0.01,
                                     method = c("aic", "p"),
                                     verbose = FALSE) {
-  # if (is.null(pos.fixed)) {
-  #   fixed <- NULL
-  #
-  #   free <-
-  #     attr(stats::terms(formula), "term.labels")
-  # } else {
-  #   # It doesnt assume any order
-  #   idxcontrol <-
-  #     attr(stats::terms(formula), "term.labels") %in% colnames(data)[pos.control]
-  #
-  #   idxfixed <-
-  #     attr(stats::terms(formula), "term.labels") %in% colnames(data)[pos.fixed]
-  #
-  #
-  #   idxvariable <-
-  #     attr(stats::terms(formula), "term.labels") %in% colnames(data)[pos.free]
-  #
-  #   control <-
-  #     attr(stats::terms(formula), "term.labels")[idxcontrol]
-  #   # if (length(control) == 0) {
-  #   #   control <- 1
-  #   # }
-  #
-  #   fixed <-
-  #     attr(stats::terms(formula), "term.labels")[idxfixed]
-  #   # if (length(fixed) == 0) {
-  #   #   fixed <- 1
-  #   # }
-  #
-  #   free <-
-  #     attr(stats::terms(formula), "term.labels")[idxvariable]
-  # }
-
-  if (include.interactions) {
+  if (include_interactions) {
     combinations <- utils::combn(c(fixed, free), 2)
 
     idxcombi <-
@@ -425,9 +250,6 @@ include_interactions_fn <- function(formula = NULL,
       })
 
     combinations <- combinations[, idxcombi]
-
-    # free_interactions <-
-    #   apply(combinations, 2, paste0, collapse = "*")
 
     free_interactions <-
       apply(combinations, 2, paste0, collapse = "%ia%")
@@ -443,7 +265,7 @@ include_interactions_fn <- function(formula = NULL,
 
     frm_base <-
       stats::formula(paste0(
-        response.name,
+        response_name,
         "~ 1 ",
         ifelse(length(control) != 0, paste0("+", paste0(
           control,
@@ -460,7 +282,7 @@ include_interactions_fn <- function(formula = NULL,
 
     frm_full <-
       stats::formula(paste0(
-        response.name,
+        response_name,
         "~",
         paste0(c(control, fixed), collapse = "+"),
         ifelse(length(control) == 0 &
@@ -472,7 +294,7 @@ include_interactions_fn <- function(formula = NULL,
   } else {
     frm_base <-
       stats::formula(paste0(
-        response.name,
+        response_name,
         "~ 1 ",
         ifelse(length(control) != 0, paste0("+", paste0(
           control,
@@ -498,29 +320,6 @@ include_interactions_fn <- function(formula = NULL,
       y = TRUE
     )
 
-
-
-  # full_model <-
-  #   rms::Glm(
-  #     formula = frm_full,
-  #     data = data,
-  #     family = family,
-  #     model = TRUE,
-  #     x = TRUE,
-  #     y = TRUE,
-  #     maxit = 500
-  #   )
-
-  # force_control <-
-  #   which(colnames(full_model$x) %in% extract_column_names(data, control))
-  #
-  # force_fixed <-
-  #   which(colnames(full_model$x) %in% extract_column_names(data, fixed))
-
-
-  # force_control <- extract_column_names(data, control)
-  # force_fixed <- extract_column_names(data, fixed)
-
   if (length(control) == 0 & length(fixed) == 0) {
     frm_lower <- formula("~1")
   } else {
@@ -537,20 +336,6 @@ include_interactions_fn <- function(formula = NULL,
 
   selected_vars <- attr(stepwise_model$terms, "term.labels")
 
-
-  # stepwise_model <-
-  #   rms::fastbw(
-  #     full_model,
-  #     rule = method,
-  #     type = "individual",
-  #     sls = alpha,
-  #     force = c(force_control, force_fixed)
-  #   )
-  #
-
-  # selected_vars <-
-  #   attr(terms(full_model$formula), "term.label")[stepwise_model$factors.kept]
-
   selected_main_vars <- stringr::str_split(selected_vars, "( ?%ia% ?|\\*)", simplify = TRUE)
   selected_main_vars <- as.character(selected_main_vars)
   selected_main_vars <- stringr::str_remove(selected_main_vars, "\\s")
@@ -562,11 +347,9 @@ include_interactions_fn <- function(formula = NULL,
 
 
 
-  # selected_vars <-  stringr::str_replace(selected_vars, ":", "*")
-
   frm_selected <-
     stats::formula(paste0(
-      response.name,
+      response_name,
       "~",
       paste0(c(control, fixed), collapse = "+"),
       ifelse(length(control) == 0 & length(fixed) == 0, "", "+"),
@@ -584,16 +367,6 @@ include_interactions_fn <- function(formula = NULL,
     y = TRUE
   )
 
-  # terms_labels <-
-  #   stringr::str_remove(attr(stats::terms(final_model), "term.labels"), "\\s")
-  #
-  # is_variable_interaction <-
-  #   !(terms_labels %in% control |
-  #       terms_labels %in% fixed |
-  #       terms_labels %in% free)
-
-  # interactions <-
-  #   as.character(attr(stats::terms(final_model)[is_variable_interaction], "term.labels"))
 
   idx <- stringr::str_detect(
     attr(
@@ -604,8 +377,6 @@ include_interactions_fn <- function(formula = NULL,
   )
   interactions <- attr(terms(final_model), "term.labels")[idx]
 
-  # interactions <-
-  #   stringr::str_replace(interactions, ":", "*")
 
   interactions <- stringr::str_remove(interactions, "\\s")
 
