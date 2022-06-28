@@ -138,7 +138,7 @@ residualrwa <- function(response_name,
 
   model <- interaction_model$final_model
 
-  x <- extract_X_RWA(
+  x <- consolidate_design_matrix(
     model = model,
     interactions = include_interactions,
     family = family
@@ -150,7 +150,7 @@ residualrwa <- function(response_name,
   base_names <- stringr::str_replace(base_names, "\\[1\\]", "")
   base_names <- stringr::str_replace(base_names, "\\=.*", "")
 
-  rwa_values <- RWA(x, y, data, family = family)
+  rwa_values <- estimate_rwa(x, y, data, family = family)
 
   columns_names <- colnames(x)
   columns_names <- stringr::str_remove(columns_names, "\\s")

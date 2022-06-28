@@ -10,85 +10,83 @@
 #' @return a list with the R^2, adjusted R^2, and relative weights for the X with respect to Y.
 #'
 #' @keywords internal
-RWA <- function(X, Y, data, family) {
-  X.svd <- svd(X)
-  Q <- X.svd$v
-  P <- X.svd$u
-  Z <- P %*% t(Q)
+estimate_rwa <- function(x, y, data, family) {
+  x_svd <- svd(x)
+  q_matrix <- x_svd$v
+  p_matrix <- x_svd$u
+  z_matrix <- p_matrix %*% t(q_matrix)
 
-  Z.stand <- scale(Z)
+  z_standard <- scale(z_matrix)
 
   # Obtaining Lambda from equation 7 from Johnson (2000) pg 8
-  Lambda <- qr.solve(t(Z.stand) %*% Z.stand) %*% t(Z.stand) %*% as.matrix(X)
+  lambda <- qr.solve(t(z_standard) %*% z_standard) %*%
+    t(z_standard) %*% as.matrix(x)
 
-  fit <- stats::glm(Y ~ Z.stand, family = family)
-  unstCoefs <- stats::coef(fit)
-  predY <- stats::predict(fit, newdata = data, type = "response")
-  Yhat <- fit$fitted.values # Creating Y-hat
+  fit <- stats::glm(Y ~ z_standard, family = family)
+  unstandardized_coefs <- stats::coef(fit)
+  prediction_y <- stats::predict(fit, newdata = data, type = "response")
+  y_hat <- fit$fitted.values # Creating Y-hat
 
-  getting.Rsq <- stats::lm(predY ~ Y) # Getting R^2
-  Rsq <- summary(getting.Rsq)$r.squared
-  AdjRsq <- summary(getting.Rsq)$adj.r.squared
+  getting_rsq <- stats::lm(prediction_y ~ Y) # Getting R^2
+  r_sq <- summary(getting_rsq)$r.squared
+  adj_r_sq <- summary(getting_rsq)$adj.r.squared
 
 
   if (family$family == "binomial") {
-    b <- unstCoefs[2:length(unstCoefs)]
+    b <- unstandardized_coefs[2:length(unstandardized_coefs)]
     # Getting stdev of logit-Y-hat
-    stdYhat <- stats::sd(Yhat)
+    std_y_hat <- stats::sd(y_hat)
     # Computing standardized logistic regression coefficients
-    beta <- b * ((sqrt(Rsq)) / stdYhat)
+    beta <- b * ((sqrt(r_sq)) / std_y_hat)
   } else if (family$family == "gaussian") {
-    beta <- unstCoefs[2:length(unstCoefs)]
+    beta <- unstandardized_coefs[2:length(unstandardized_coefs)]
   }
 
+  epsilon <- lambda^2 %*% beta^2
+  sum_epsilons <- sum(epsilon)
+  prop_weights <- (epsilon / sum_epsilons)
+  names(prop_weights) <- colnames(x)
 
-
-  epsilon <- Lambda^2 %*% beta^2
-  sum.epsilons <- sum(epsilon)
-  PropWeights <- (epsilon / sum.epsilons)
-  names(PropWeights) <- colnames(X)
-  return(
-    list(
-      AdjRsq = AdjRsq,
-      Rsq = Rsq,
-      sum.epsilons = sum.epsilons,
-      epsilon = epsilon,
-      PropWeights = PropWeights
-    )
-  )
+  return(list(
+    adj_r_sq = adj_r_sq,
+    r_sq = r_sq,
+    sum_epsilons = sum_epsilons,
+    epsilon = epsilon,
+    prop_weights = prop_weights
+  ))
 }
 
 
 extract_column_names <- function(data, type_variable) {
-  unlist(sapply(colnames(data), function(column.name) {
-    na.omit(
-      stringr::str_match(type_variable, column.name)
-    )
-  }))
+  unlist(sapply(
+    X = colnames(data),
+    FUN = function(column_name) {
+      na.omit(stringr::str_match(type_variable, column_name))
+    }
+  ))
 }
 
 
-extract_X_RWA <- function(model, interactions, family) {
+consolidate_design_matrix <- function(model, interactions, family) {
   # Define Design matrix
-  XDesign <- model$x
+  x_design <- model$x
   idx <- model$assign
 
   # Case when there are interactions
   if (interactions) {
-    col.interactions <-
-      which(model$Design$assume == "interaction")
+    cols_interactions <- which(model$Design$assume == "interaction")
 
 
-    for (k in col.interactions) {
+    for (k in cols_interactions) {
       xx <- stringr::str_split(colnames(model$x)[idx[[k]] - 1], " \\* |:")
 
       if (length(xx) == 1) {
         ll <- lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
-        XDesign[, idx[[k]] - 1] <- resid(ll)
+        x_design[, idx[[k]] - 1] <- resid(ll)
       } else {
         for (i in seq_along(xx)) {
           ll <- lm(model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]])
-          XDesign[, idx[[k]] - 1][, i] <- resid(ll)
+          x_design[, idx[[k]] - 1][, i] <- resid(ll)
         }
       }
     }
@@ -96,26 +94,25 @@ extract_X_RWA <- function(model, interactions, family) {
 
   # Define the new fitting from the Design matrix
   if (family$family == "binomial") {
-    ff <- rms::lrm.fit(x = XDesign, y = model$y, tol = 1e-9)
+    ff <- rms::lrm.fit(x = x_design, y = model$y, tol = 1e-9)
   } else if (family$family == "gaussian") {
-    ff <- rms::ols(model$y ~ XDesign, tol = 1e-9)
+    ff <- rms::ols(model$y ~ x_design, tol = 1e-9)
   }
-
   cc <- ff$coefficients[-1]
-  X <- NULL
+  x <- NULL
 
 
   # Consolidate a new design matrix grouping the splines terms
   for (j in seq_along(model$assign)) {
     nn <- names(idx[j])
-    m <- as.matrix(XDesign[, idx[[j]] - 1])
+    m <- as.matrix(x_design[, idx[[j]] - 1])
     sc <- cc[idx[[j]] - 1]
-    Xtmp <- m %*% sc
-    colnames(Xtmp) <- nn
-    X <- cbind(X, Xtmp)
+    x_tmp <- m %*% sc
+    colnames(x_tmp) <- nn
+    x <- cbind(x, x_tmp)
   }
 
-  return(X)
+  return(x)
 }
 
 
