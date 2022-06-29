@@ -43,6 +43,9 @@ residualrwa <- function(response_name,
                         name_fixed = "Fixed",
                         name_free = "Free",
                         name_interactions = "Interactions",
+                        boot_ci = FALSE,
+                        n_boot = 100,
+                        mc_cores = 1,
                         verbose = FALSE) {
   if (!is.data.frame(data)) {
     stop("The parameter 'data' must be a data.frame")
@@ -52,6 +55,13 @@ residualrwa <- function(response_name,
     control_reorder <- extract_column_names(data, control)
     fixed_reorder <- extract_column_names(data, fixed)
     free_reorder <- extract_column_names(data, free)
+
+    data <- data[, c(
+      response_name,
+      control_reorder,
+      fixed_reorder,
+      free_reorder
+    )]
   }
 
   if (is.character(family)) {
@@ -67,14 +77,6 @@ residualrwa <- function(response_name,
   }
 
 
-  data <-
-    data[, c(
-      response_name,
-      control_reorder,
-      fixed_reorder,
-      free_reorder
-    )]
-
   if (is.character(control) && length(control) == 0) {
     stop("control parameter must be a character vector or NULL")
   }
@@ -83,6 +85,86 @@ residualrwa <- function(response_name,
     stop("fixed parameter must be a character vector or NULL")
   }
 
+
+  out_residualrwa <- estimate_residualrwa(
+    response_name,
+    control,
+    fixed,
+    free,
+    data,
+    family,
+    include_interactions,
+    name_control,
+    name_fixed,
+    name_free,
+    name_interactions,
+    verbose
+  )
+
+  out <- out_residualrwa
+
+  if (boot_ci) {
+    message("\n")
+    rwa_boot <- parallel::mclapply(
+      mc.cores = mc_cores,
+      X = 1:n_boot,
+      function(i) {
+        message(paste0("Boot sample #", i))
+        data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE), ]
+
+        run_rwa <- estimate_residualrwa(
+          response_name,
+          control,
+          fixed,
+          free,
+          data = data_boot,
+          family,
+          include_interactions,
+          name_control,
+          name_fixed,
+          name_free,
+          name_interactions,
+          verbose
+        )
+
+        df_out <- data.frame(
+          cbind(run_rwa$data_frame,
+            n_boot = rep(i, nrow(run_rwa$data_frame))
+          )
+        )
+        return(df_out)
+      }
+    )
+
+    out_boot <- dplyr::bind_rows(rwa_boot)
+
+    out_boot <- tidyr::complete(data = out_boot, variable, n_boot)
+
+    out_boot$weight <- ifelse(is.na(out_boot$weight), 0, out_boot$weight)
+
+    out <- append(out, list(data_frame_boot = out_boot, boot_ci = TRUE))
+  } else {
+    out <- append(out, list(boot_ci = FALSE))
+  }
+
+  class(out) <- "residualrwa"
+
+  return(out)
+}
+
+
+estimate_residualrwa <- function(response_name,
+                                 control,
+                                 fixed,
+                                 free,
+                                 data,
+                                 family,
+                                 include_interactions,
+                                 name_control,
+                                 name_fixed,
+                                 name_free,
+                                 name_interactions,
+                                 verbose) {
   control <- stringr::str_remove(control, "\\s")
   fixed <- stringr::str_remove(fixed, "\\s")
   free <- stringr::str_remove(free, "\\s")
@@ -117,12 +199,12 @@ residualrwa <- function(response_name,
 
   interaction_model <- include_interactions_fn(
     formula = formula_base_model,
+    response_name = response_name,
     data = data,
     control = control,
     fixed = fixed,
     free = free,
-    response.name = response_name,
-    include.interactions = include_interactions,
+    include_interactions = include_interactions,
     family = family,
     verbose = verbose
   )
@@ -154,7 +236,7 @@ residualrwa <- function(response_name,
   df_rwa_summary <-
     data.frame(
       variable = columns_names,
-      weight = rwa_values$PropWeights
+      weight = rwa_values$prop_weights
     )
   rownames(df_rwa_summary) <- columns_names
 
@@ -179,19 +261,14 @@ residualrwa <- function(response_name,
   resume <- dplyr::group_by(resume, type)
   resume <- dplyr::summarise(resume, Effects_sum = sum(weight))
 
-
   out <- list(
     summary = resume,
     data_frame = df_rwa_summary,
     model = interaction_model$final_model,
     rwa_model = rwa_values
   )
-
-  class(out) <- "residualrwa"
-
   return(out)
 }
-
 
 
 
@@ -298,7 +375,7 @@ include_interactions_fn <- function(formula = NULL,
       y = TRUE
     )
 
-  if (length(control) == 0 & length(fixed) == 0) {
+  if (length(control) == 0 && length(fixed) == 0) {
     frm_lower <- formula("~1")
   } else {
     frm_lower <-
@@ -314,7 +391,10 @@ include_interactions_fn <- function(formula = NULL,
 
   selected_vars <- attr(stepwise_model$terms, "term.labels")
 
-  selected_main_vars <- stringr::str_split(selected_vars, "( ?%ia% ?|\\*)", simplify = TRUE)
+  selected_main_vars <- stringr::str_split(selected_vars,
+    "( ?%ia% ?|\\*)",
+    simplify = TRUE
+  )
   selected_main_vars <- as.character(selected_main_vars)
   selected_main_vars <- stringr::str_remove(selected_main_vars, "\\s")
   selected_main_vars <- selected_main_vars[nchar(selected_main_vars) != 0]
