@@ -9,7 +9,7 @@
 #' @param include.interactions A boolean indicating if the model should calculate all the pairwise interactions between variables. It uses the names in the parameters \code{fixed} and \code{variables}.
 #' @param name.control,name.fixed,name.variables,name.interactions Names used to label the summary tables
 #' @param verbose if \code{TRUE}, \code{residualrwa} shows all the stepwise process. Defaults to \code{FALSE}.
-#' @return A modelrwa object
+#' @return A residualrwa object
 #' @export
 #'
 #' @examples
@@ -22,7 +22,7 @@
 #'
 #' data <- as.data.frame(cbind(Y, X1, X2, X3))
 #'
-#' ex1 <- modelrwa(
+#' ex1 <- residualrwa(
 #'   response.name = "Y",
 #'   control = NULL,
 #'   fixed = NULL,

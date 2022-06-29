@@ -1,7 +1,7 @@
 
-# Plot for modelrwa objects
+# Plot for residualrwa objects
 #'
-#' @param x an object of class "modelrwa"
+#' @param x an object of class "residualrwa"
 #' @param title an optional title for the plot
 #'
 #' @return Returns a ggplot object

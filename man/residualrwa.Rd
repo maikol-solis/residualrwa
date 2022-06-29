@@ -45,7 +45,7 @@ residualrwa(
 \item{verbose}{if \code{TRUE}, \code{residualrwa} shows all the stepwise process. Defaults to \code{FALSE}.}
 }
 \value{
-A modelrwa object
+A residualrwa object
 }
 \description{
 #' Detect influential variables in model with Relative Weight Analysis
@@ -60,7 +60,7 @@ Y <- plogis(X2^3+10*X1*X2)>0.5
 
 data <- as.data.frame(cbind(Y,X1,X2,X3))
 
-ex1 <- modelrwa(
+ex1 <- residualrwa(
   response.name = "Y" ,
   control = NULL,
   fixed = NULL,

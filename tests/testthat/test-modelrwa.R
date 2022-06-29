@@ -8,7 +8,7 @@ test_that("Check class", {
 
   data <- as.data.frame(cbind(Y,X1,X2,X3))
 
-  ex1 <- modelrwa(
+  ex1 <- residualrwa(
     response.name = "Y" ,
     control = NULL,
     fixed = NULL,
@@ -18,5 +18,5 @@ test_that("Check class", {
     include.interactions = TRUE
   )
 
-  expect_identical(class(ex1), "modelrwa")
+  expect_identical(class(ex1), "residualrwa")
 })
