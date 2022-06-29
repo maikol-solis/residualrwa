@@ -22,12 +22,12 @@ estimate_rwa <- function(x, y, data, family) {
   lambda <- qr.solve(t(z_standard) %*% z_standard) %*%
     t(z_standard) %*% as.matrix(x)
 
-  fit <- stats::glm(Y ~ z_standard, family = family)
+  fit <- stats::glm(y ~ z_standard, family = family)
   unstandardized_coefs <- stats::coef(fit)
   prediction_y <- stats::predict(fit, newdata = data, type = "response")
   y_hat <- fit$fitted.values # Creating Y-hat
 
-  getting_rsq <- stats::lm(prediction_y ~ Y) # Getting R^2
+  getting_rsq <- stats::lm(prediction_y ~ y) # Getting R^2
   r_sq <- summary(getting_rsq)$r.squared
   adj_r_sq <- summary(getting_rsq)$adj.r.squared
 
