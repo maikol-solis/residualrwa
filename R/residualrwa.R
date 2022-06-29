@@ -47,6 +47,9 @@ residualrwa <- function(response_name,
                         n_boot = 100,
                         mc_cores = 1,
                         verbose = FALSE) {
+  ## Setting NULL variables to pacify R checks.
+  variable <- NULL
+
   if (!is.data.frame(data)) {
     stop("The parameter 'data' must be a data.frame")
   } else {
@@ -165,6 +168,10 @@ estimate_residualrwa <- function(response_name,
                                  name_free,
                                  name_interactions,
                                  verbose) {
+  ## Setting NULL variables to pacify R checks.
+  type <- weight <- NULL
+
+  ## Core function starts here.
   control <- stringr::str_remove(control, "\\s")
   fixed <- stringr::str_remove(fixed, "\\s")
   free <- stringr::str_remove(free, "\\s")
