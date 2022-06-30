@@ -48,7 +48,7 @@ residualrwa <- function(response_name,
                         mc_cores = 1,
                         verbose = FALSE) {
   ## Setting NULL variables to pacify R checks.
-  variable <- NULL
+  variable <- weight <- NULL
 
   if (!is.data.frame(data)) {
     stop("The parameter 'data' must be a data.frame")
@@ -107,12 +107,14 @@ residualrwa <- function(response_name,
   out <- out_residualrwa
 
   if (boot_ci) {
-    message("\n")
+    cat(paste0("Running bootstrap samples (X/", n_boot, "): "))
     rwa_boot <- parallel::mclapply(
       mc.cores = mc_cores,
       X = 1:n_boot,
       function(i) {
-        message(paste0("Boot sample #", i))
+        if (i %% mc_cores == 0) {
+          cat(paste0(i, ", "))
+        }
         data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE), ]
 
         run_rwa <- estimate_residualrwa(
@@ -140,12 +142,24 @@ residualrwa <- function(response_name,
     )
 
     out_boot <- dplyr::bind_rows(rwa_boot)
-
     out_boot <- tidyr::complete(data = out_boot, variable, n_boot)
-
     out_boot$weight <- ifelse(is.na(out_boot$weight), 0, out_boot$weight)
 
-    out <- append(out, list(data_frame_boot = out_boot, boot_ci = TRUE))
+    out_boot_ci <- dplyr::group_by(.data = out_boot, variable)
+    out_boot_ci <- dplyr::summarise(
+      .data = out_boot_ci,
+      ci_low = quantile(weight, 0.025),
+      ci_up = quantile(weight, 0.975)
+    )
+
+    out$data_frame <- suppressMessages(
+      dplyr::left_join(out$data_frame, out_boot_ci)
+    )
+
+    out <- append(out, list(
+      data_frame_boot = out_boot,
+      boot_ci = TRUE
+    ))
   } else {
     out <- append(out, list(boot_ci = FALSE))
   }
