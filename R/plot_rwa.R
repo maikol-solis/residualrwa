@@ -8,39 +8,46 @@
 #' @export
 #'
 #' @examples
-plot_rwa <- function(x, title = "") {
+plot_rwa <- function(x, boot_ci, font_size = 12) {
+  ## Pacify R checks
+  variable <- weight <- ci_low <- ci_up <- NULL
+
   df <- x$data_frame
   df$variable <- reorder(df$variable, df$weight)
 
-  if (x$boot_ci == TRUE) {
-    df_boot <- x$data_frame_boot
-    df_boot$variable <- reorder(df_boot$variable, df_boot$weight)
-    ggplot2::ggplot(data = df_boot) +
-      ggplot2::geom_boxplot(ggplot2::aes(x = variable, y = weight)) +
-      ggplot2::geom_point(
-        data = df,
-        ggplot2::aes(x = variable, y = weight),
-        color = "red", fill = "red", size = 2, shape = 23
-      ) +
-      ggplot2::theme_minimal(base_size = 12) +
-      ggplot2::scale_y_continuous(labels = scales::percent) +
-      ggplot2::ggtitle(title) +
-      ggplot2::coord_flip()
+  if (missing(boot_ci)) {
+    boot_ci <- x$boot
   } else {
-    ggplot2::ggplot(data = df) +
-      ggplot2::geom_segment(ggplot2::aes(
-        x = variable,
-        xend = variable,
-        y = 0,
-        yend = weight
-      )) +
-      ggplot2::geom_point(
-        ggplot2::aes(x = variable, y = weight),
-        color = "red", fill = "red", size = 2, shape = 23
-      ) +
-      ggplot2::theme_minimal(base_size = 12) +
-      ggplot2::scale_y_continuous(labels = scales::percent) +
-      ggplot2::ggtitle(title) +
-      ggplot2::coord_flip()
+    if (class(boot_ci) != "logical") {
+      stop("boot_ci must be logical.")
+    }
   }
+
+  p <- ggplot2::ggplot(data = df) +
+    ggplot2::geom_point(
+      ggplot2::aes(x = variable, y = weight),
+      color = "red", fill = "red", size = 3, shape = 23
+    )
+
+  if (boot_ci == TRUE) {
+    p <- p + ggplot2::geom_errorbar(ggplot2::aes(
+      x = variable,
+      ymin = ci_low,
+      ymax = ci_up
+    ))
+  } else {
+    p <- p + ggplot2::geom_segment(ggplot2::aes(
+      x = variable,
+      xend = variable,
+      y = 0,
+      yend = weight
+    ))
+  }
+
+  p <- p + ggplot2::scale_y_continuous(labels = scales::percent) +
+    ggplot2::coord_flip() +
+    cowplot::theme_minimal_grid(font_size = font_size)
+
+
+  return(p)
 }
