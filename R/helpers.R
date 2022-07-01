@@ -1,15 +1,4 @@
-
-
-
-#' Relative Weight Analysis for logistic regression
-#'
-#' @param X matrix or data.frame with inputs
-#' @param Y numeric vector or data.frame with output.
-#' @param data data.frame
-#'
-#' @return a list with the R^2, adjusted R^2, and relative weights for the X with respect to Y.
-#'
-#' @keywords internal
+## Estimate relative weights
 estimate_rwa <- function(x, y, data, family) {
   x_svd <- svd(x)
   q_matrix <- x_svd$v
@@ -56,7 +45,7 @@ estimate_rwa <- function(x, y, data, family) {
   ))
 }
 
-
+## Extract columns names from data
 extract_column_names <- function(data, type_variable) {
   unlist(sapply(
     X = colnames(data),
@@ -66,7 +55,7 @@ extract_column_names <- function(data, type_variable) {
   ))
 }
 
-
+## Consolidate spline columns into one factor
 consolidate_design_matrix <- function(model, interactions, family) {
   # Define Design matrix
   x_design <- model$x
