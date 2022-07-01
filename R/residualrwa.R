@@ -129,7 +129,7 @@ residualrwa <- function(response_name,
           name_fixed,
           name_free,
           name_interactions,
-          verbose
+          verbose = FALSE
         )
 
         df_out <- data.frame(
