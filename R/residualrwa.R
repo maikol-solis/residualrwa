@@ -47,8 +47,10 @@ residualrwa <- function(response_name,
                         n_boot = 100,
                         mc_cores = 1,
                         verbose = FALSE) {
+  out <- list(call = match.call())
   ## Setting NULL variables to pacify R checks.
   variable <- weight <- NULL
+
 
   if (!is.data.frame(data)) {
     stop("The parameter 'data' must be a data.frame")
@@ -104,16 +106,16 @@ residualrwa <- function(response_name,
     verbose
   )
 
-  out <- out_residualrwa
+  out <- append(out, out_residualrwa)
 
   if (boot_ci) {
-    cat(paste0("Running bootstrap samples (X/", n_boot, "): "))
+    cat(paste0("\nRunning bootstrap samples (X/", n_boot, "): "))
     rwa_boot <- parallel::mclapply(
       mc.cores = mc_cores,
       X = 1:n_boot,
       function(i) {
         if (i %% mc_cores == 0) {
-          cat(paste0(i, ", "))
+          cat(paste0(i, "..."))
         }
         data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE), ]
 
@@ -286,7 +288,13 @@ estimate_residualrwa <- function(response_name,
     summary = resume,
     data_frame = df_rwa_summary,
     model = interaction_model$final_model,
-    rwa_model = rwa_values
+    data = data,
+    variables = list(
+      free = df_rwa_summary[cols_with_free, "variable"],
+      fixed = df_rwa_summary[cols_with_fixed, "variable"],
+      control = df_rwa_summary[cols_with_control, "variable"],
+      interactions = df_rwa_summary[cols_with_interactions, "variable"]
+    )
   )
   return(out)
 }
