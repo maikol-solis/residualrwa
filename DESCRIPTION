@@ -8,12 +8,7 @@ Description: Estimates the relative importance of a set of variables (linear or 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Suggests: 
-    testthat (>= 3.0.0),
-    knitr,
-    rmarkdown
-Config/testthat/edition: 3
-Imports: 
+Imports:
     ggplot2,
     rms,
     dplyr,
