@@ -50,7 +50,7 @@ extract_column_names <- function(data, type_variable) {
   unlist(sapply(
     X = colnames(data),
     FUN = function(column_name) {
-      na.omit(stringr::str_match(type_variable, column_name))
+      stats::na.omit(stringr::str_match(type_variable, column_name))
     }
   ))
 }
@@ -70,12 +70,14 @@ consolidate_design_matrix <- function(model, interactions, family) {
       xx <- stringr::str_split(colnames(model$x)[idx[[k]] - 1], " \\* |:")
 
       if (length(xx) == 1) {
-        ll <- lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
-        x_design[, idx[[k]] - 1] <- resid(ll)
+        ll <- stats::lm(model$x[, idx[[k]] - 1] ~ -1 + model$x[, xx[[1]]])
+        x_design[, idx[[k]] - 1] <- stats::resid(ll)
       } else {
         for (i in seq_along(xx)) {
-          ll <- lm(model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]])
-          x_design[, idx[[k]] - 1][, i] <- resid(ll)
+          ll <- stats::lm(
+            model$x[, idx[[k]] - 1][, i] ~ -1 + model$x[, xx[[i]]]
+          )
+          x_design[, idx[[k]] - 1][, i] <- stats::resid(ll)
         }
       }
     }

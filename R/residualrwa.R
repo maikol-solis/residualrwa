@@ -148,8 +148,8 @@ residualrwa <- function(response_name,
     out_boot_ci <- dplyr::group_by(.data = out_boot, variable)
     out_boot_ci <- dplyr::summarise(
       .data = out_boot_ci,
-      ci_low = quantile(weight, 0.025),
-      ci_up = quantile(weight, 0.975)
+      ci_low = stats::quantile(weight, 0.025),
+      ci_up = stats::quantile(weight, 0.975)
     )
 
     out$data_frame <- suppressMessages(
@@ -449,12 +449,12 @@ include_interactions_fn <- function(formula = NULL,
 
   idx <- stringr::str_detect(
     attr(
-      terms(final_model),
+      stats::terms(final_model),
       "term.labels"
     ),
     "%ia%|\\*|:"
   )
-  interactions <- attr(terms(final_model), "term.labels")[idx]
+  interactions <- attr(stats::terms(final_model), "term.labels")[idx]
 
 
   interactions <- stringr::str_remove(interactions, "\\s")
