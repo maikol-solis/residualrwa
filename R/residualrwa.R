@@ -1,38 +1,87 @@
-#' #' Detect influential variables in model with Relative Weight Analysis
+#' @title Nonlinear relative weight analysis with residualization
 #'
-#' @param response.name name for independent variable
-#' @param control character vector with names for control variables
-#' @param fixed character vector with names for fixed variables
-#' @param free character vector with names for free variables
-#' @param data object data.frame with data
-#' @param family type of regression (see \code{\link[stats]{family}})
-#' @param include.interactions A boolean indicating if the model should calculate all the pairwise interactions between variables. It uses the names in the parameters \code{fixed} and \code{variables}.
-#' @param name.control,name.fixed,name.variables,name.interactions Names used to label the summary tables
-#' @param verbose if \code{TRUE}, \code{residualrwa} shows all the stepwise process. Defaults to \code{FALSE}.
-#' @return A residualrwa object
-#' @export
+#' @description Method to detecting influential variables in nonlinear model
+#'   with residualized relative weight analysis.
+#'
+
+#'
+#' @param response,free,fixed,control Character or character vectors with names
+#'   for each parameter. Used in \code{residualrwa} to determine how to treat
+#'   each variable. \code{response} is the model output. \code{free} are
+#'   variables that can be included or removed (even in interactions) in all the
+#'   models without restrictions. \code{fixed} are persistent variables across
+#'   all the models, however they can be included/removed on interactions.
+#'   \code{control} they only act as main effects and never are used for
+#'   interactions.
+#' @param data A \code{data.frame}.
+#' @param family A specification for the model link function. See
+#'   \code{\link[stats]{family}} for accepted values.
+#' @param include_interactions A boolean with default \code{FALSE}. Determine if
+#'   the model should calculate all the pairwise interactions between variables.
+#'   It uses the names in the parameters \code{free} and \code{fixed}.
+#' @param name_free,name_fixed,name_control,name_interactions A string for type
+#'   of variable with defaults "Free", "Fixed", "Control" and "Interaction".
+#'   Names used to label the summary tables
+#' @param boot_ci A boolean with default \code{FALSE}. Determine if a bootstrap
+#'   procedure should be used to estimate confidence intervals for the weights.
+#'   Defaults to \code{FALSE}.
+#' @param n_boot A numeric with default 100. Number of bootstrap samples used to
+#'   estimate the confidence intervals.
+#' @param mc_cores A numeric with default 1. Number of cores used when
+#'   performing the bootstrap samples.
+#' @param verbose A boolean with default \code{FALSE}. If \code{TRUE},
+#'   \code{residualrwa} shows message about the stepwise process.
+#'
+#' @return A residualrwa object with this structure:
+#'
+#' \describe{
+#'
+#' \item{summary}{a \code{data.frame} with the consolidated sum of relative
+#' weights according to each type of component; free, fixed, control and
+#' interactions.}
+#'
+#' \item{data_frame}{a \code{data.frame} with the individual relative weights
+#' for each variable. The \code{data.frame} has columns: \code{variable},
+#' \code{weight} and \code{type}. If \code{boot_ci = TRUE}, two optional columns
+#' \code{ci_low} and \code{ci_up} indicating the lower and upper confidence
+#' intervals for each variable respectively.}
+#'
+#' \item{model}{a \code{\link[rms]{Glm}} object with the final model used to
+#' estimate the relative weights.}
+#'
+#' \item{data}{original \code{data.frame}.}
+#'
+#' \item{variables}{a list with character vectors \code{free}, \code{fixed},
+#' \code{control} and \code{interactions} with the final variables used in the
+#' model.}
+#'
+#' \item{boot_ci}{a boolean indicating if the bootstrap procedure was used.}
+#'
+#' }
+#'
 #'
 #' @examples
 #'
-#' X1 <- rnorm(1000)
-#' X2 <- rnorm(1000)
-#' X3 <- rnorm(1000)
-#'
-#' Y <- plogis(X2^3 + 10 * X1 * X2) > 0.5
-#'
+#' n <- 100
+#' X1 <- rnorm(n)
+#' X2 <- rnorm(n)
+#' X3 <- rnorm(n)
+#' Y <- X2^3 + 10 * X1 * X2
 #' data <- as.data.frame(cbind(Y, X1, X2, X3))
 #'
-#' ex1 <- residualrwa(
-#'   response.name = "Y",
+#' ex <- residualrwa(
+#'   response = "Y",
 #'   control = NULL,
 #'   fixed = NULL,
-#'   variables = c("X1", "X2", "X3"),
+#'   free = c("X1", "X2", "X3"),
 #'   data = data,
-#'   family = binomial,
-#'   include.interactions = TRUE
+#'   include_interactions = TRUE,
+#'   boot_ci = TRUE,
+#'   n_boot = 5
 #' )
 #'
-residualrwa <- function(response_name,
+#' @export
+residualrwa <- function(response,
                         control = NULL,
                         fixed = NULL,
                         free,
@@ -62,7 +111,7 @@ residualrwa <- function(response_name,
     free_reorder <- extract_column_names(data, free)
 
     data <- data[, c(
-      response_name,
+      response,
       control_reorder,
       fixed_reorder,
       free_reorder
@@ -92,7 +141,7 @@ residualrwa <- function(response_name,
 
 
   out_residualrwa <- estimate_residualrwa(
-    response_name,
+    response,
     control,
     fixed,
     free,
@@ -120,7 +169,7 @@ residualrwa <- function(response_name,
         data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE), ]
 
         run_rwa <- estimate_residualrwa(
-          response_name,
+          response,
           control,
           fixed,
           free,
@@ -142,6 +191,7 @@ residualrwa <- function(response_name,
         return(df_out)
       }
     )
+    cat("\n")
 
     out_boot <- dplyr::bind_rows(rwa_boot)
     out_boot <- tidyr::complete(data = out_boot, variable, n_boot)
@@ -167,12 +217,11 @@ residualrwa <- function(response_name,
   }
 
   class(out) <- "residualrwa"
-
   return(out)
 }
 
 
-estimate_residualrwa <- function(response_name,
+estimate_residualrwa <- function(response,
                                  control,
                                  fixed,
                                  free,
@@ -195,7 +244,7 @@ estimate_residualrwa <- function(response_name,
 
   formula_base_model <-
     stats::formula(paste0(
-      response_name,
+      response,
       "~ 1 ",
       ifelse(length(control) != 0, paste0("+", paste0(
         control,
@@ -222,7 +271,7 @@ estimate_residualrwa <- function(response_name,
 
   interaction_model <- include_interactions_fn(
     formula = formula_base_model,
-    response_name = response_name,
+    response = response,
     data = data,
     control = control,
     fixed = fixed,
@@ -243,7 +292,7 @@ estimate_residualrwa <- function(response_name,
     family = family
   )
   x <- scale(x)
-  y <- data[, response_name]
+  y <- data[, response]
 
   base_names <- colnames(interaction_model$final_model$x)
   base_names <- stringr::str_replace(base_names, "\\[1\\]", "")
@@ -282,7 +331,7 @@ estimate_residualrwa <- function(response_name,
 
   resume <- df_rwa_summary
   resume <- dplyr::group_by(resume, type)
-  resume <- dplyr::summarise(resume, Effects_sum = sum(weight))
+  resume <- dplyr::summarise(resume, total_rsq = sum(weight))
 
   out <- list(
     summary = resume,
@@ -302,27 +351,15 @@ estimate_residualrwa <- function(response_name,
 
 
 
-#' Include interactions in a model
-#'
-#' @param formula  an object of class formula with main effects.
-#' @param data  a data.frame.
-#' @param response.name output name of the data.
-# @param pos.control,pos.fixed,pos.free position of the control, fixed and variables inputs in the data.frame.
-#' @param include.interactions a boolean indicating if create or no a pairwise set of interactions.
-#' @param family type of regression (see \code{\link[stats]{family}})
-#'
-#' @return a list with the control, fixed, free and interactions used in the model. Also it returns the the fitted model.
-#'
-#' @keywords internal
-include_interactions_fn <- function(formula = NULL,
-                                    response_name = NULL,
-                                    data = NULL,
+include_interactions_fn <- function(formula,
+                                    response,
+                                    data,
                                     control = control,
                                     fixed = fixed,
                                     free = free,
-                                    include_interactions = FALSE,
+                                    include_interactions,
                                     family,
-                                    verbose = FALSE) {
+                                    verbose) {
   if (include_interactions) {
     combinations <- utils::combn(c(fixed, free), 2)
 
@@ -349,7 +386,7 @@ include_interactions_fn <- function(formula = NULL,
 
     frm_base <-
       stats::formula(paste0(
-        response_name,
+        response,
         "~ 1 ",
         ifelse(length(control) != 0, paste0("+", paste0(
           control,
@@ -366,7 +403,7 @@ include_interactions_fn <- function(formula = NULL,
 
     frm_full <-
       stats::formula(paste0(
-        response_name,
+        response,
         "~",
         paste0(c(control, fixed), collapse = "+"),
         ifelse(length(control) == 0 &
@@ -378,7 +415,7 @@ include_interactions_fn <- function(formula = NULL,
   } else {
     frm_base <-
       stats::formula(paste0(
-        response_name,
+        response,
         "~ 1 ",
         ifelse(length(control) != 0, paste0("+", paste0(
           control,
@@ -436,7 +473,7 @@ include_interactions_fn <- function(formula = NULL,
 
   frm_selected <-
     stats::formula(paste0(
-      response_name,
+      response,
       "~",
       paste0(c(control, fixed), collapse = "+"),
       ifelse(length(control) == 0 & length(fixed) == 0, "", "+"),

@@ -2,75 +2,112 @@
 % Please edit documentation in R/residualrwa.R
 \name{residualrwa}
 \alias{residualrwa}
-\title{#' Detect influential variables in model with Relative Weight Analysis}
+\title{Nonlinear relative weight analysis with residualization}
 \usage{
 residualrwa(
-  response.name,
+  response,
   control = NULL,
   fixed = NULL,
   free,
   data,
   family = stats::gaussian(),
-  include.interactions = FALSE,
-  alpha = 0.1,
-  method = c("aic", "p"),
-  name.control = "Control",
-  name.fixed = "Fixed",
-  name.free = "Free",
-  name.interactions = "Interactions",
+  include_interactions = FALSE,
+  name_control = "Control",
+  name_fixed = "Fixed",
+  name_free = "Free",
+  name_interactions = "Interactions",
+  boot_ci = FALSE,
+  n_boot = 100,
+  mc_cores = 1,
   verbose = FALSE
 )
 }
 \arguments{
-\item{response.name}{name for independent variable}
+\item{response, free, fixed, control}{Character or character vectors with names
+for each parameter. Used in \code{residualrwa} to determine how to treat
+each variable. \code{response} is the model output. \code{free} are
+variables that can be included or removed (even in interactions) in all the
+models without restrictions. \code{fixed} are persistent variables across
+all the models, however they can be included/removed on interactions.
+\code{control} they only act as main effects and never are used for
+interactions.}
 
-\item{control}{character vector with names for control variables}
+\item{data}{A \code{data.frame}.}
 
-\item{fixed}{character vector with names for fixed variables}
+\item{family}{A specification for the model link function. See
+\code{\link[stats]{family}} for accepted values.}
 
-\item{free}{character vector with names for free variables}
+\item{include_interactions}{A boolean with default \code{FALSE}. Determine if
+the model should calculate all the pairwise interactions between variables.
+It uses the names in the parameters \code{free} and \code{fixed}.}
 
-\item{data}{object data.frame with data}
+\item{name_free, name_fixed, name_control, name_interactions}{A string for type
+of variable with defaults "Free", "Fixed", "Control" and "Interaction".
+Names used to label the summary tables}
 
-\item{family}{type of regression (see \code{\link[stats]{family}})}
+\item{boot_ci}{A boolean with default \code{FALSE}. Determine if a bootstrap
+procedure should be used to estimate confidence intervals for the weights.
+Defaults to \code{FALSE}.}
 
-\item{include.interactions}{A boolean indicating if the model should calculate all the pairwise interactions between variables. It uses the names in the parameters \code{fixed} and \code{variables}.}
+\item{n_boot}{A numeric with default 100. Number of bootstrap samples used to
+estimate the confidence intervals.}
 
-\item{alpha}{level of significance use if \code{method = "p"}.}
+\item{mc_cores}{A numeric with default 1. Number of cores used when
+performing the bootstrap samples.}
 
-\item{method}{method used to keep interactions if \code{include.interactions=TRUE}. See \code{\link[rms]{fastbw}}.}
-
-\item{name.control, name.fixed, name.variables, name.interactions}{Names used to label the summary tables}
-
-\item{verbose}{if \code{TRUE}, \code{residualrwa} shows all the stepwise process. Defaults to \code{FALSE}.}
+\item{verbose}{A boolean with default \code{FALSE}. If \code{TRUE},
+\code{residualrwa} shows message about the stepwise process.}
 }
 \value{
-A residualrwa object
+A residualrwa object with this structure:
+
+\describe{
+
+\item{summary}{a \code{data.frame} with the consolidated sum of relative
+weights according to each type of component; free, fixed, control and
+interactions.}
+
+\item{data_frame}{a \code{data.frame} with the individual relative weights
+for each variable. The \code{data.frame} has columns: \code{variable},
+\code{weight} and \code{type}. If \code{boot_ci = TRUE}, two optional columns
+\code{ci_low} and \code{ci_up} indicating the lower and upper confidence
+intervals for each variable respectively.}
+
+\item{model}{a \code{\link[rms]{Glm}} object with the final model used to
+estimate the relative weights.}
+
+\item{data}{original \code{data.frame}.}
+
+\item{variables}{a list with character vectors \code{free}, \code{fixed},
+\code{control} and \code{interactions} with the final variables used in the
+model.}
+
+\item{boot_ci}{a boolean indicating if the bootstrap procedure was used.}
+
+}
 }
 \description{
-#' Detect influential variables in model with Relative Weight Analysis
+Method to detecting influential variables in nonlinear model
+  with residualized relative weight analysis.
 }
 \examples{
 
-X1 <- rnorm(1000)
-X2 <- rnorm(1000)
-X3 <- rnorm(1000)
+n <- 100
+X1 <- rnorm(n)
+X2 <- rnorm(n)
+X3 <- rnorm(n)
+Y <- X2^3 + 10 * X1 * X2
+data <- as.data.frame(cbind(Y, X1, X2, X3))
 
-Y <- plogis(X2^3+10*X1*X2)>0.5
-
-data <- as.data.frame(cbind(Y,X1,X2,X3))
-
-ex1 <- residualrwa(
-  response.name = "Y" ,
+ex <- residualrwa(
+  response = "Y",
   control = NULL,
   fixed = NULL,
-  variables = c("X1","X2", "X3"),
+  free = c("X1", "X2", "X3"),
   data = data,
-  family = binomial,
-  include.interactions = TRUE
+  include_interactions = TRUE,
+  boot_ci = TRUE,
+  n_boot = 5
 )
-
-
-
 
 }
