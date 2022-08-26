@@ -51,27 +51,26 @@ plot.residualrwa <- function(x, boot_ci, font_size = 12, ...) {
 
   p <- ggplot2::ggplot(data = df) +
     ggplot2::geom_point(
-      ggplot2::aes(x = variable, y = weight),
+      ggplot2::aes(x = weight, y = variable),
       color = "red", fill = "red", size = 3, shape = 23
     )
 
   if (boot_ci == TRUE) {
     p <- p + ggplot2::geom_errorbar(ggplot2::aes(
-      x = variable,
-      ymin = ci_low,
-      ymax = ci_up
+      y = variable,
+      xmin = ci_low,
+      xmax = ci_up
     ))
   } else {
     p <- p + ggplot2::geom_segment(ggplot2::aes(
-      x = variable,
-      xend = variable,
-      y = 0,
-      yend = weight
+      y = variable,
+      yend = variable,
+      x = 0,
+      xend = weight
     ))
   }
 
-  p <- p + ggplot2::scale_y_continuous(labels = scales::percent) +
-    ggplot2::coord_flip() +
+  p <- p + ggplot2::scale_x_reverse(labels = scales::percent) +
     cowplot::theme_minimal_grid(font_size = font_size)
 
 
