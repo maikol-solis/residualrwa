@@ -47,12 +47,12 @@ estimate_rwa <- function(x, y, data, family) {
 
 ## Extract columns names from data
 extract_column_names <- function(data, type_variable) {
-  unlist(sapply(
+  unique(unlist(sapply(
     X = colnames(data),
     FUN = function(column_name) {
       stats::na.omit(stringr::str_match(type_variable, column_name))
     }
-  ))
+  )))
 }
 
 ## Consolidate spline columns into one factor
