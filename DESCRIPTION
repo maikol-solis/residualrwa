@@ -16,5 +16,6 @@ Imports:
     stringr,
     MASS,
     cowplot,
-    tidyr
+    tidyr,
+    pbmclapply
 RoxygenNote: 7.2.0

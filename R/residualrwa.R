@@ -158,11 +158,12 @@ residualrwa <- function(response,
   out <- append(out, out_residualrwa)
 
   if (boot_ci) {
-    cat(paste0("\nRunning bootstrap samples (X/", n_boot, "): "))
-    rwa_boot <- parallel::mclapply(
+    cat("\nEstimating bootstrap confidence intervals.")
+
+    rwa_boot <- pbmclappy::pbmclappy(
       mc.cores = mc_cores,
       X = 1:n_boot,
-      function(i) {
+      FUN = function(i) {
         if (i %% mc_cores == 0) {
           cat(paste0(i, "..."))
         }
