@@ -449,11 +449,14 @@ include_interactions_fn <- function(formula,
       formula(paste0("~", paste0(control, fixed, collapse = "+")))
   }
 
-  stepwise_model <- MASS::stepAIC(base_model,
+  stepwise_model <- MASS::stepAIC(
+    base_model,
     scope = list(
       lower = frm_lower,
       upper = frm_full
-    ), trace = verbose
+    ),
+    trace = verbose,
+    k = log(nrow(data))
   )
 
   selected_vars <- attr(stepwise_model$terms, "term.labels")
