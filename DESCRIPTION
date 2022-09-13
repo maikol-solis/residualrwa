@@ -17,5 +17,5 @@ Imports:
     MASS,
     cowplot,
     tidyr,
-    pbmclapply
+    pbmcapply
 RoxygenNote: 7.2.0
