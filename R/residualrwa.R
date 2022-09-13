@@ -19,6 +19,9 @@
 #' @param include_interactions A boolean with default \code{FALSE}. Determine if
 #'   the model should calculate all the pairwise interactions between variables.
 #'   It uses the names in the parameters \code{free} and \code{fixed}.
+#' @param steps A numeric with default 20. Number of steps to perform the
+#'   stepwise model selection. See \code{\link[MASS]{stepAIC}} for further
+#'   explanation.
 #' @param name_free,name_fixed,name_control,name_interactions A string for type
 #'   of variable with defaults "Free", "Fixed", "Control" and "Interaction".
 #'   Names used to label the summary tables
@@ -88,6 +91,7 @@ residualrwa <- function(response,
                         data,
                         family = stats::gaussian(),
                         include_interactions = FALSE,
+                        steps = 20,
                         name_control = "Control",
                         name_fixed = "Fixed",
                         name_free = "Free",
@@ -153,6 +157,7 @@ residualrwa <- function(response,
     name_free,
     name_interactions,
     verbose
+    steps = steps,
   )
 
   out <- append(out, out_residualrwa)
@@ -181,6 +186,7 @@ residualrwa <- function(response,
           name_fixed,
           name_free,
           name_interactions,
+          steps = steps,
           verbose = FALSE
         )
 
@@ -229,6 +235,7 @@ estimate_residualrwa <- function(response,
                                  data,
                                  family,
                                  include_interactions,
+                                 steps,
                                  name_control,
                                  name_fixed,
                                  name_free,
@@ -278,6 +285,7 @@ estimate_residualrwa <- function(response,
     fixed = fixed,
     free = free,
     include_interactions = include_interactions,
+    steps = steps,
     family = family,
     verbose = verbose
   )
@@ -359,6 +367,7 @@ include_interactions_fn <- function(formula,
                                     fixed = fixed,
                                     free = free,
                                     include_interactions,
+                                    steps,
                                     family,
                                     verbose) {
   if (include_interactions) {
@@ -457,7 +466,7 @@ include_interactions_fn <- function(formula,
     ),
     trace = verbose,
     k = log(nrow(data)),
-    steps = 10
+    steps = steps
   )
 
   selected_vars <- attr(stepwise_model$terms, "term.labels")
