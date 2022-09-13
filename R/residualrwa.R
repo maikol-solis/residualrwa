@@ -145,19 +145,19 @@ residualrwa <- function(response,
 
 
   out_residualrwa <- estimate_residualrwa(
-    response,
-    control,
-    fixed,
-    free,
-    data,
-    family,
-    include_interactions,
-    name_control,
-    name_fixed,
-    name_free,
-    name_interactions,
-    verbose
+    response = response,
+    control = control,
+    fixed = fixed,
+    free = free,
+    data = data,
+    family = family,
+    include_interactions = include_interactions,
     steps = steps,
+    name_control = name_control,
+    name_fixed = name_fixed,
+    name_free = name_free,
+    name_interactions = name_interactions,
+    verbose = verbose
   )
 
   out <- append(out, out_residualrwa)
@@ -175,18 +175,18 @@ residualrwa <- function(response,
         data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE),]
 
         run_rwa <- estimate_residualrwa(
-          response,
-          control,
-          fixed,
-          free,
+          response = response,
+          control = control,
+          fixed = fixed,
+          free = free,
           data = data_boot,
-          family,
-          include_interactions,
-          name_control,
-          name_fixed,
-          name_free,
-          name_interactions,
+          family = family,
+          include_interactions = include_interactions,
           steps = steps,
+          name_control = name_control,
+          name_fixed = name_fixed,
+          name_free = name_free,
+          name_interactions = name_interactions,
           verbose = FALSE
         )
 
@@ -363,9 +363,9 @@ estimate_residualrwa <- function(response,
 include_interactions_fn <- function(formula,
                                     response,
                                     data,
-                                    control = control,
-                                    fixed = fixed,
-                                    free = free,
+                                    control,
+                                    fixed,
+                                    free,
                                     include_interactions,
                                     steps,
                                     family,
