@@ -114,12 +114,7 @@ residualrwa <- function(response,
     fixed_reorder <- extract_column_names(data, fixed)
     free_reorder <- extract_column_names(data, free)
 
-    data <- data[, c(
-      response,
-      control_reorder,
-      fixed_reorder,
-      free_reorder
-    )]
+    data <- data[, c(response, control_reorder, fixed_reorder, free_reorder)]
   }
 
   if (is.character(family)) {
@@ -172,7 +167,7 @@ residualrwa <- function(response,
       mc.cores = mc_cores,
       X = 1:n_boot,
       FUN = function(i) {
-        data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE),]
+        data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE), ]
 
         run_rwa <- estimate_residualrwa(
           response = response,
@@ -250,8 +245,8 @@ estimate_residualrwa <- function(response,
   free <- stringr::str_remove(free, "\\s")
 
 
-  formula_base_model <-
-    stats::formula(paste0(
+  formula_base_model <- stats::formula(
+    paste0(
       response,
       "~ 1 ",
       ifelse(length(control) != 0, paste0("+", paste0(
@@ -264,18 +259,18 @@ estimate_residualrwa <- function(response,
       ifelse(length(free) != 0,
         paste0("+", paste0(free, collapse = "+")), ""
       )
-    ))
-
-  base_model <-
-    rms::Glm(
-      formula = formula_base_model,
-      data = data,
-      model = TRUE,
-      maxit = 1000,
-      family = family,
-      x = TRUE,
-      y = TRUE
     )
+  )
+
+  base_model <- rms::Glm(
+    formula = formula_base_model,
+    data = data,
+    model = TRUE,
+    maxit = 1000,
+    family = family,
+    x = TRUE,
+    y = TRUE
+  )
 
   interaction_model <- include_interactions_fn(
     formula = formula_base_model,
@@ -314,11 +309,11 @@ estimate_residualrwa <- function(response,
   columns_names <- stringr::str_replace(columns_names, "\\[1\\]", "")
   columns_names <- stringr::str_replace(columns_names, "\\=.*", "")
 
-  df_rwa_summary <-
-    data.frame(
-      variable = columns_names,
-      weight = rwa_values$prop_weights
-    )
+  df_rwa_summary <- data.frame(
+    variable = columns_names,
+    weight = rwa_values$prop_weights
+  )
+
   rownames(df_rwa_summary) <- columns_names
 
   cols_with_control <- columns_names[columns_names %in% control]
@@ -373,12 +368,14 @@ include_interactions_fn <- function(formula,
   if (include_interactions) {
     combinations <- utils::combn(c(fixed, free), 2)
 
-    idxcombi <-
-      sapply(seq_along(combinations[1, ]), function(i) {
+    idxcombi <- sapply(
+      X = seq_along(combinations[1, ]),
+      FUN = function(i) {
         all(
           stringr::str_detect(combinations[, i], "\\A1\\z", negate = TRUE)
         )
-      })
+      }
+    )
 
     combinations <- combinations[, idxcombi]
 
@@ -388,8 +385,7 @@ include_interactions_fn <- function(formula,
       free_interactions <- paste0(combinations, collapse = "%ia%")
     }
 
-    idxia <-
-      stringr::str_detect(free_interactions, "rcs")
+    idxia <- stringr::str_detect(free_interactions, "rcs")
 
     free_interactions <- c(
       free_interactions[idxia],
@@ -397,8 +393,8 @@ include_interactions_fn <- function(formula,
     )
 
 
-    frm_base <-
-      stats::formula(paste0(
+    frm_base <- stats::formula(
+      paste0(
         response,
         "~ 1 ",
         ifelse(length(control) != 0, paste0("+", paste0(
@@ -410,12 +406,13 @@ include_interactions_fn <- function(formula,
           collapse = "+"
         )), ""),
         ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
-      ))
+      )
+    )
 
 
 
-    frm_full <-
-      stats::formula(paste0(
+    frm_full <- stats::formula(
+      paste0(
         response,
         "~",
         paste0(c(control, fixed), collapse = "+"),
@@ -424,41 +421,39 @@ include_interactions_fn <- function(formula,
         paste0(free, collapse = "+"),
         "+",
         paste0(free_interactions, collapse = "+")
-      ))
+      )
+    )
   } else {
-    frm_base <-
-      stats::formula(paste0(
-        response,
-        "~ 1 ",
-        ifelse(length(control) != 0, paste0("+", paste0(
-          control,
-          collapse = "+"
-        )), ""),
-        ifelse(length(fixed) != 0, paste0("+", paste0(
-          fixed,
-          collapse = "+"
-        )), ""),
-        ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
-      ))
+    frm_base <- stats::formula(paste0(
+      response,
+      "~ 1 ",
+      ifelse(length(control) != 0, paste0("+", paste0(
+        control,
+        collapse = "+"
+      )), ""),
+      ifelse(length(fixed) != 0, paste0("+", paste0(
+        fixed,
+        collapse = "+"
+      )), ""),
+      ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
+    ))
 
     frm_full <- frm_base
   }
 
-  base_model <-
-    stats::glm(
-      formula = frm_base,
-      data = data,
-      family = family,
-      model = TRUE,
-      x = TRUE,
-      y = TRUE
-    )
+  base_model <- stats::glm(
+    formula = frm_base,
+    data = data,
+    family = family,
+    model = TRUE,
+    x = TRUE,
+    y = TRUE
+  )
 
   if (length(control) == 0 && length(fixed) == 0) {
     frm_lower <- formula("~1")
   } else {
-    frm_lower <-
-      formula(paste0("~", paste0(control, fixed, collapse = "+")))
+    frm_lower <- formula(paste0("~", paste0(control, fixed, collapse = "+")))
   }
 
   stepwise_model <- MASS::stepAIC(
@@ -474,7 +469,8 @@ include_interactions_fn <- function(formula,
 
   selected_vars <- attr(stepwise_model$terms, "term.labels")
 
-  selected_main_vars <- stringr::str_split(selected_vars,
+  selected_main_vars <- stringr::str_split(
+    selected_vars,
     "( ?%ia% ?|\\*)",
     simplify = TRUE
   )
@@ -488,15 +484,15 @@ include_interactions_fn <- function(formula,
 
 
 
-  frm_selected <-
-    stats::formula(paste0(
-      response,
-      "~",
+  frm_selected <- stats::formula(
+    paste0(
+      response, "~",
       paste0(c(control, fixed), collapse = "+"),
       ifelse(length(control) == 0 & length(fixed) == 0, "", "+"),
       ifelse(length(selected_vars) == 0, "1", ""),
       paste0(selected_vars, collapse = "+")
-    ))
+    )
+  )
 
 
   final_model <- rms::Glm(
@@ -510,12 +506,10 @@ include_interactions_fn <- function(formula,
 
 
   idx <- stringr::str_detect(
-    attr(
-      stats::terms(final_model),
-      "term.labels"
-    ),
+    attr(stats::terms(final_model), "term.labels"),
     "%ia%|\\*|:"
   )
+
   interactions <- attr(stats::terms(final_model), "term.labels")[idx]
 
 
