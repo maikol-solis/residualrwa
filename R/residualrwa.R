@@ -160,11 +160,14 @@ residualrwa <- function(response,
   if (boot_ci) {
     cat("\nEstimating bootstrap confidence intervals.")
 
+    ## For debuggin purposes
+    # rwa_boot <- lapply(
+
     rwa_boot <- pbmcapply::pbmclapply(
       mc.cores = mc_cores,
       X = 1:n_boot,
       FUN = function(i) {
-        data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE), ]
+        data_boot <- data[sample(nrow(data), nrow(data), replace = TRUE),]
 
         run_rwa <- estimate_residualrwa(
           response,
