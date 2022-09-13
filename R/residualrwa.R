@@ -453,7 +453,8 @@ include_interactions_fn <- function(formula,
       upper = frm_full
     ),
     trace = verbose,
-    k = log(nrow(data))
+    k = log(nrow(data)),
+    steps = 20
   )
 
   selected_vars <- attr(stepwise_model$terms, "term.labels")
