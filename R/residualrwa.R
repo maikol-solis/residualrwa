@@ -382,8 +382,11 @@ include_interactions_fn <- function(formula,
 
     combinations <- combinations[, idxcombi]
 
-    free_interactions <-
-      apply(combinations, 2, paste0, collapse = "%ia%")
+    if (is.matrix(combinations)) {
+      free_interactions <- apply(combinations, 2, paste0, collapse = "%ia%")
+    } else {
+      free_interactions <- paste0(combinations, collapse = "%ia%")
+    }
 
     idxia <-
       stringr::str_detect(free_interactions, "rcs")
