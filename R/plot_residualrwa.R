@@ -73,6 +73,5 @@ plot.residualrwa <- function(x, boot_ci, font_size = 12, ...) {
   p <- p + ggplot2::scale_x_reverse(labels = scales::percent) +
     cowplot::theme_minimal_grid(font_size = font_size)
 
-
   return(p)
 }

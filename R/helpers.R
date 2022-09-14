@@ -64,7 +64,6 @@ consolidate_design_matrix <- function(model, interactions, family) {
   if (interactions) {
     cols_interactions <- which(model$Design$assume == "interaction")
 
-
     for (k in cols_interactions) {
       xx <- stringr::str_split(colnames(model$x)[idx[[k]] - 1], " \\* |:")
 
@@ -91,7 +90,6 @@ consolidate_design_matrix <- function(model, interactions, family) {
   cc <- ff$coefficients[-1]
   x <- NULL
 
-
   # Consolidate a new design matrix grouping the splines terms
   for (j in seq_along(model$assign)) {
     nn <- names(idx[j])
@@ -104,7 +102,6 @@ consolidate_design_matrix <- function(model, interactions, family) {
 
   return(x)
 }
-
 
 # R2M <- function(x, formula, data) {
 #   LM <- stats::update(x, formula, data = data)

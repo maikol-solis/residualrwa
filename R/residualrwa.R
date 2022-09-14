@@ -207,7 +207,6 @@ residualrwa <- function(response,
   return(out)
 }
 
-
 estimate_residualrwa <- function(response,
                                  control,
                                  fixed,
@@ -226,7 +225,6 @@ estimate_residualrwa <- function(response,
   control <- stringr::str_remove(control, "\\s")
   fixed <- stringr::str_remove(fixed, "\\s")
   free <- stringr::str_remove(free, "\\s")
-
 
   formula_base_model <- stats::formula(
     paste0(
@@ -333,9 +331,6 @@ estimate_residualrwa <- function(response,
   return(out)
 }
 
-
-
-
 include_interactions_fn <- function(formula,
                                     response,
                                     data,
@@ -376,8 +371,7 @@ include_interactions_fn <- function(formula,
         response,
         "~",
         paste0(c(control, fixed), collapse = "+"),
-        ifelse(length(control) == 0 &
-          length(fixed) == 0, "", "+"),
+        ifelse(length(control) == 0 & length(fixed) == 0, "", "+"),
         paste0(free, collapse = "+"),
         "+",
         paste0(free_interactions, collapse = "+")
@@ -445,11 +439,7 @@ include_interactions_fn <- function(formula,
   selected_main_vars <- stringr::str_remove(selected_main_vars, "\\s")
   selected_main_vars <- selected_main_vars[nchar(selected_main_vars) != 0]
 
-
   selected_vars <- unique(c(selected_main_vars, selected_vars))
-
-
-
 
   frm_selected <- stats::formula(
     paste0(
@@ -461,7 +451,6 @@ include_interactions_fn <- function(formula,
     )
   )
 
-
   final_model <- rms::Glm(
     formula = frm_selected,
     data = data,
@@ -471,15 +460,11 @@ include_interactions_fn <- function(formula,
     y = TRUE
   )
 
-
   idx <- stringr::str_detect(
-    attr(stats::terms(final_model), "term.labels"),
-    "%ia%|\\*|:"
+    attr(stats::terms(final_model), "term.labels"), "%ia%|\\*|:"
   )
 
   interactions <- attr(stats::terms(final_model), "term.labels")[idx]
-
-
   interactions <- stringr::str_remove(interactions, "\\s")
 
   return(
