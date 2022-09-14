@@ -20,14 +20,13 @@ estimate_rwa <- function(x, y, data, family) {
   r_sq <- summary(getting_rsq)$r.squared
   adj_r_sq <- summary(getting_rsq)$adj.r.squared
 
-
-  if (family$family == "binomial") {
+  if (family == "binomial") {
     b <- unstandardized_coefs[2:length(unstandardized_coefs)]
     # Getting stdev of logit-Y-hat
     std_y_hat <- stats::sd(y_hat)
     # Computing standardized logistic regression coefficients
     beta <- b * ((sqrt(r_sq)) / std_y_hat)
-  } else if (family$family == "gaussian") {
+  } else if (family == "gaussian") {
     beta <- unstandardized_coefs[2:length(unstandardized_coefs)]
   }
 
@@ -84,9 +83,9 @@ consolidate_design_matrix <- function(model, interactions, family) {
   }
 
   # Define the new fitting from the Design matrix
-  if (family$family == "binomial") {
+  if (family == "binomial") {
     ff <- rms::lrm.fit(x = x_design, y = model$y, tol = 1e-9)
-  } else if (family$family == "gaussian") {
+  } else if (family == "gaussian") {
     ff <- rms::ols(model$y ~ x_design, tol = 1e-9)
   }
   cc <- ff$coefficients[-1]

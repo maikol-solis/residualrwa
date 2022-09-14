@@ -14,14 +14,11 @@
 #'   \code{control} they only act as main effects and never are used for
 #'   interactions.
 #' @param data A \code{data.frame}.
-#' @param family A specification for the model link function. See
-#'   \code{\link[stats]{family}} for accepted values.
+#' @param family A string with default \code{"gaussian"}. It specifies the model
+#'   link function. Accepted values are \code{"gaussian"} or \code{"binomial"}.
 #' @param include_interactions A boolean with default \code{FALSE}. Determine if
 #'   the model should calculate all the pairwise interactions between variables.
 #'   It uses the names in the parameters \code{free} and \code{fixed}.
-#' @param steps A numeric with default 20. Number of steps to perform the
-#'   stepwise model selection. See \code{\link[MASS]{stepAIC}} for further
-#'   explanation.
 #' @param name_free,name_fixed,name_control,name_interactions A string for type
 #'   of variable with defaults "Free", "Fixed", "Control" and "Interaction".
 #'   Names used to label the summary tables
@@ -32,8 +29,6 @@
 #'   estimate the confidence intervals.
 #' @param mc_cores A numeric with default 1. Number of cores used when
 #'   performing the bootstrap samples.
-#' @param verbose A boolean with default \code{FALSE}. If \code{TRUE},
-#'   \code{residualrwa} shows message about the stepwise process.
 #'
 #' @return A residualrwa object with this structure:
 #'
@@ -89,46 +84,34 @@ residualrwa <- function(response,
                         fixed = NULL,
                         free,
                         data,
-                        family = stats::gaussian(),
+                        family = "gaussian",
                         include_interactions = FALSE,
-                        steps = 20,
                         name_control = "Control",
                         name_fixed = "Fixed",
                         name_free = "Free",
                         name_interactions = "Interactions",
                         boot_ci = FALSE,
                         n_boot = 100,
-                        mc_cores = 1,
-                        verbose = FALSE) {
+                        mc_cores = 1) {
   out <- list(call = match.call())
   ## Setting NULL variables to pacify R checks.
   variable <- weight <- NULL
 
-
   if (!is.data.frame(data)) {
     stop("The parameter 'data' must be a data.frame")
-  } else {
-    # Reorder the dataframe
-
-    control_reorder <- extract_column_names(data, control)
-    fixed_reorder <- extract_column_names(data, fixed)
-    free_reorder <- extract_column_names(data, free)
-
-    data <- data[, c(response, control_reorder, fixed_reorder, free_reorder)]
   }
 
-  if (is.character(family)) {
-    family <- get(family, mode = "function", envir = parent.frame())
-  }
-  if (is.function(family)) {
-    family <- family()
-  }
-  if (is.null(family$family) ||
-    !(family$family %in% c("gaussian", "binomial"))) {
-    print(family)
-    stop("'family' not recognized for residualrwa")
+  if (!is.character(family)) {
+    stop("Parameter family must be a string: 'gaussian' or 'binomial'.")
   }
 
+  if (length(family) > 1) {
+    stop("Parameter family must be of length 1.")
+  }
+
+  if (!(family %in% c("gaussian", "binomial"))) {
+    stop(paste0("Parameter family = ", family, ", is not recognized."))
+  }
 
   if (is.character(control) && length(control) == 0) {
     stop("control parameter must be a character vector or NULL")
@@ -137,6 +120,12 @@ residualrwa <- function(response,
   if (is.character(fixed) && length(fixed) == 0) {
     stop("fixed parameter must be a character vector or NULL")
   }
+
+  control_reorder <- extract_column_names(data, control)
+  fixed_reorder <- extract_column_names(data, fixed)
+  free_reorder <- extract_column_names(data, free)
+
+  data <- data[, c(response, control_reorder, fixed_reorder, free_reorder)]
 
 
   out_residualrwa <- estimate_residualrwa(
@@ -147,12 +136,10 @@ residualrwa <- function(response,
     data = data,
     family = family,
     include_interactions = include_interactions,
-    steps = steps,
     name_control = name_control,
     name_fixed = name_fixed,
     name_free = name_free,
-    name_interactions = name_interactions,
-    verbose = verbose
+    name_interactions = name_interactions
   )
 
   out <- append(out, out_residualrwa)
@@ -177,12 +164,10 @@ residualrwa <- function(response,
           data = data_boot,
           family = family,
           include_interactions = include_interactions,
-          steps = steps,
           name_control = name_control,
           name_fixed = name_fixed,
           name_free = name_free,
-          name_interactions = name_interactions,
-          verbose = FALSE
+          name_interactions = name_interactions
         )
 
         df_out <- data.frame(
@@ -230,12 +215,10 @@ estimate_residualrwa <- function(response,
                                  data,
                                  family,
                                  include_interactions,
-                                 steps,
                                  name_control,
                                  name_fixed,
                                  name_free,
-                                 name_interactions,
-                                 verbose) {
+                                 name_interactions) {
   ## Setting NULL variables to pacify R checks.
   type <- weight <- NULL
 
@@ -280,9 +263,7 @@ estimate_residualrwa <- function(response,
     fixed = fixed,
     free = free,
     include_interactions = include_interactions,
-    steps = steps,
-    family = family,
-    verbose = verbose
+    family = family
   )
 
   names_in_model <- stats::terms(base_model$formula)
@@ -362,9 +343,7 @@ include_interactions_fn <- function(formula,
                                     fixed,
                                     free,
                                     include_interactions,
-                                    steps,
-                                    family,
-                                    verbose) {
+                                    family) {
   if (include_interactions) {
     combinations <- utils::combn(c(fixed, free), 2)
 
@@ -392,25 +371,6 @@ include_interactions_fn <- function(formula,
       stringr::str_replace(free_interactions[!idxia], "%ia%", "*")
     )
 
-
-    frm_base <- stats::formula(
-      paste0(
-        response,
-        "~ 1 ",
-        ifelse(length(control) != 0, paste0("+", paste0(
-          control,
-          collapse = "+"
-        )), ""),
-        ifelse(length(fixed) != 0, paste0("+", paste0(
-          fixed,
-          collapse = "+"
-        )), ""),
-        ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
-      )
-    )
-
-
-
     frm_full <- stats::formula(
       paste0(
         response,
@@ -424,56 +384,63 @@ include_interactions_fn <- function(formula,
       )
     )
   } else {
-    frm_base <- stats::formula(paste0(
-      response,
-      "~ 1 ",
-      ifelse(length(control) != 0, paste0("+", paste0(
-        control,
-        collapse = "+"
-      )), ""),
-      ifelse(length(fixed) != 0, paste0("+", paste0(
-        fixed,
-        collapse = "+"
-      )), ""),
-      ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
-    ))
-
-    frm_full <- frm_base
+    frm_full <- stats::formula(
+      paste0(
+        response,
+        "~ 1 ",
+        ifelse(length(control) != 0,
+          paste0("+", paste0(control, collapse = "+")), ""
+        ),
+        ifelse(length(fixed) != 0,
+          paste0("+", paste0(fixed, collapse = "+")), ""
+        ),
+        ifelse(length(free) != 0, paste0("+", paste0(free, collapse = "+")), "")
+      )
+    )
   }
 
-  base_model <- stats::glm(
-    formula = frm_base,
-    data = data,
-    family = family,
-    model = TRUE,
-    x = TRUE,
-    y = TRUE
-  )
-
-  if (length(control) == 0 && length(fixed) == 0) {
-    frm_lower <- formula("~1")
-  } else {
-    frm_lower <- formula(paste0("~", paste0(control, fixed, collapse = "+")))
+  if (family == "gaussian") {
+    full_model <- rms::ols(
+      formula = frm_full,
+      data = data,
+      model = TRUE,
+      x = TRUE,
+      y = TRUE
+    )
+  } else if (family == "binomial") {
+    full_model <- rms::lrm(
+      formula = frm_full,
+      data = data,
+      model = TRUE,
+      x = TRUE,
+      y = TRUE
+    )
   }
 
-  stepwise_model <- MASS::stepAIC(
-    base_model,
-    scope = list(
-      lower = frm_lower,
-      upper = frm_full
-    ),
-    trace = verbose,
-    k = log(nrow(data)),
-    steps = steps
+  names_factors <- stringr::str_remove(
+    names(full_model$model)[-1], "\\s"
   )
 
-  selected_vars <- attr(stepwise_model$terms, "term.labels")
+  idx_control <- which(names_factors == control)
+  idx_fixed <- which(names_factors == fixed)
+
+  force_control <- unlist(full_model$assign[idx_control])
+  force_fixed <- unlist(full_model$assign[idx_fixed])
+
+  stepwise_model <- rms::fastbw(
+    fit = full_model,
+    type = "individual",
+    force = c(force_control, force_fixed),
+    k.aic = log(nrow(data))
+  )
+
+  selected_vars <- names_factors[stepwise_model$factors.kept]
 
   selected_main_vars <- stringr::str_split(
-    selected_vars,
-    "( ?%ia% ?|\\*)",
+    selected_vars, "( ?%ia% ?|\\*)",
     simplify = TRUE
   )
+
   selected_main_vars <- as.character(selected_main_vars)
   selected_main_vars <- stringr::str_remove(selected_main_vars, "\\s")
   selected_main_vars <- selected_main_vars[nchar(selected_main_vars) != 0]
