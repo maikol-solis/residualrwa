@@ -20,14 +20,14 @@
 #'   the model should calculate all the pairwise interactions between variables.
 #'   It uses the names in the parameters \code{free} and \code{fixed}.
 #' @param name_free,name_fixed,name_control,name_interactions A string for type
-#'   of variable with defaults "Free", "Fixed", "Control" and "Interaction".
-#'   Names used to label the summary tables
+#'   of variable with defaults \code{"Free"}, \code{"Fixed"}, \code{"Control"}
+#'   and \code{"Interaction"}. Names used to label the summary tables
 #' @param boot_ci A boolean with default \code{FALSE}. Determine if a bootstrap
 #'   procedure should be used to estimate confidence intervals for the weights.
 #'   Defaults to \code{FALSE}.
-#' @param n_boot A numeric with default 100. Number of bootstrap samples used to
-#'   estimate the confidence intervals.
-#' @param mc_cores A numeric with default 1. Number of cores used when
+#' @param n_boot A numeric with default \code{100}. Number of bootstrap samples
+#'   used to estimate the confidence intervals.
+#' @param mc_cores A numeric with default \code{1}. Number of cores used when
 #'   performing the bootstrap samples.
 #'
 #' @return A residualrwa object with this structure:

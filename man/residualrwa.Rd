@@ -10,7 +10,7 @@ residualrwa(
   fixed = NULL,
   free,
   data,
-  family = stats::gaussian(),
+  family = "gaussian",
   include_interactions = FALSE,
   name_control = "Control",
   name_fixed = "Fixed",
@@ -18,8 +18,7 @@ residualrwa(
   name_interactions = "Interactions",
   boot_ci = FALSE,
   n_boot = 100,
-  mc_cores = 1,
-  verbose = FALSE
+  mc_cores = 1
 )
 }
 \arguments{
@@ -34,29 +33,26 @@ interactions.}
 
 \item{data}{A \code{data.frame}.}
 
-\item{family}{A specification for the model link function. See
-\code{\link[stats]{family}} for accepted values.}
+\item{family}{A string with default \code{"gaussian"}. It specifies the model
+link function. Accepted values are \code{"gaussian"} or \code{"binomial"}.}
 
 \item{include_interactions}{A boolean with default \code{FALSE}. Determine if
 the model should calculate all the pairwise interactions between variables.
 It uses the names in the parameters \code{free} and \code{fixed}.}
 
 \item{name_free, name_fixed, name_control, name_interactions}{A string for type
-of variable with defaults "Free", "Fixed", "Control" and "Interaction".
-Names used to label the summary tables}
+of variable with defaults \code{"Free"}, \code{"Fixed"}, \code{"Control"}
+and \code{"Interaction"}. Names used to label the summary tables}
 
 \item{boot_ci}{A boolean with default \code{FALSE}. Determine if a bootstrap
 procedure should be used to estimate confidence intervals for the weights.
 Defaults to \code{FALSE}.}
 
-\item{n_boot}{A numeric with default 100. Number of bootstrap samples used to
-estimate the confidence intervals.}
+\item{n_boot}{A numeric with default \code{100}. Number of bootstrap samples
+used to estimate the confidence intervals.}
 
-\item{mc_cores}{A numeric with default 1. Number of cores used when
+\item{mc_cores}{A numeric with default \code{1}. Number of cores used when
 performing the bootstrap samples.}
-
-\item{verbose}{A boolean with default \code{FALSE}. If \code{TRUE},
-\code{residualrwa} shows message about the stepwise process.}
 }
 \value{
 A residualrwa object with this structure:
