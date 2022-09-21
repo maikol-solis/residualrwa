@@ -293,7 +293,6 @@ estimate_residualrwa <- function(response,
     weight = rwa_values$prop_weights
   )
 
-  rownames(df_rwa_summary) <- columns_names
 
   cols_with_control <- columns_names[columns_names %in% control]
 
