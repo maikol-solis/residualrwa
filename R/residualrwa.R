@@ -294,8 +294,6 @@ estimate_residualrwa <- function(response,
   )
 
 
-  df_rwa_summary <- dplyr::arrange(df_rwa_summary, dplyr::desc(weight))
-
   cols_with_control <- columns_names[columns_names %in% control]
 
   cols_with_fixed <- columns_names[columns_names %in% fixed]
