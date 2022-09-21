@@ -312,6 +312,8 @@ estimate_residualrwa <- function(response,
   df_rwa_summary[cols_with_free, "type"] <- name_free
   df_rwa_summary[cols_with_interactions, "type"] <- name_interactions
 
+  df_rwa_summary <- dplyr::arrange(df_rwa_summary, dplyr::desc(weight))
+
   resume <- df_rwa_summary
   resume <- dplyr::group_by(resume, type)
   resume <- dplyr::summarise(resume, total_rsq = sum(weight))
