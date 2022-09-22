@@ -410,7 +410,7 @@ include_interactions_fn <- function(formula,
       model = TRUE,
       x = TRUE,
       y = TRUE,
-      maxit = 1000
+      maxit = 5000
     )
   }
 
