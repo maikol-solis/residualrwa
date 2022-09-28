@@ -410,7 +410,7 @@ include_interactions_fn <- function(formula,
       model = TRUE,
       x = TRUE,
       y = TRUE,
-      maxit = 5000
+      maxit = 1000
     )
     k.aic <- log(min(table(data[, response])))
   }
@@ -431,6 +431,7 @@ include_interactions_fn <- function(formula,
     force = c(force_control, force_fixed),
     k.aic = k.aic
   )
+
 
   selected_vars <- names_factors[stepwise_model$factors.kept]
 

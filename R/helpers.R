@@ -83,7 +83,7 @@ consolidate_design_matrix <- function(model, interactions, family) {
 
   # Define the new fitting from the Design matrix
   if (family == "binomial") {
-    ff <- rms::lrm.fit(x = x_design, y = model$y, tol = 1e-9)
+    ff <- rms::lrm.fit(x = x_design, y = model$y, maxit = 1000, tol = 1e-9)
   } else if (family == "gaussian") {
     ff <- rms::ols(model$y ~ x_design, tol = 1e-9)
   }
