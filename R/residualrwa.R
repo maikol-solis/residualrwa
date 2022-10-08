@@ -355,9 +355,22 @@ include_interactions_fn <- function(formula,
     combinations <- combinations[, idxcombi]
 
     if (is.matrix(combinations)) {
-      free_interactions <- apply(combinations, 2, paste0, collapse = "%ia%")
+      free_interactions <- apply(
+        X = combinations, MARGIN = 2,
+        FUN = function(x) {
+          if (any(stringr::str_detect(x, "rcs"))) {
+            paste0(x, collapse = "%ia%")
+          } else {
+            paste0(x, collapse = "*")
+          }
+        }
+      )
     } else {
-      free_interactions <- paste0(combinations, collapse = "%ia%")
+      free_interactions <- if (any(stringr::str_detect(combinations, "rcs"))) {
+        paste0(combinations, collapse = "%ia%")
+      } else {
+        paste0(combinations, collapse = "*")
+      }
     }
 
     idxia <- stringr::str_detect(free_interactions, "rcs")
@@ -416,7 +429,7 @@ include_interactions_fn <- function(formula,
   }
 
   names_factors <- stringr::str_remove(
-    names(full_model$model)[-1], "\\s"
+    names(full_model$assign), "\\s"
   )
 
   idx_control <- which(names_factors == control)
@@ -436,7 +449,7 @@ include_interactions_fn <- function(formula,
   selected_vars <- names_factors[stepwise_model$factors.kept]
 
   selected_main_vars <- stringr::str_split(
-    selected_vars, "( ?%ia% ?|\\*)",
+    selected_vars, "(%ia%|:)",
     simplify = TRUE
   )
 
