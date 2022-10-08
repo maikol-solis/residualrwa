@@ -415,7 +415,7 @@ include_interactions_fn <- function(formula,
       x = TRUE,
       y = TRUE
     )
-    k.aic <- log(nrow(data))
+    k_aic <- log(nrow(data))
   } else if (family == "binomial") {
     full_model <- rms::lrm(
       formula = frm_full,
@@ -425,7 +425,7 @@ include_interactions_fn <- function(formula,
       y = TRUE,
       maxit = 1000
     )
-    k.aic <- log(min(table(data[, response])))
+    k_aic <- log(min(table(data[, response])))
   }
 
   names_factors <- stringr::str_remove(
@@ -442,7 +442,7 @@ include_interactions_fn <- function(formula,
     fit = full_model,
     type = "individual",
     force = c(force_control, force_fixed),
-    k.aic = k.aic
+    k.aic = k_aic
   )
 
 
