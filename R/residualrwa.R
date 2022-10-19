@@ -442,7 +442,8 @@ include_interactions_fn <- function(formula,
     fit = full_model,
     type = "individual",
     force = c(force_control, force_fixed),
-    k.aic = k_aic
+    k.aic = k_aic,
+    eps = 1e-20
   )
 
 
